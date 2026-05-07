@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\sibren\\\\code\\\\PROJECTS\\\\RESTAURANTS\\\\code\\\\backend\\\\src\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"D:\\\\sibren\\\\code\\\\PROJECTS\\\\RESTAURANTS\\\\code\\\\frontend-backoffice\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); const deps = {...p.dependencies, ...p.devDependencies}; ['class-validator','class-transformer','@nestjs/swagger','reflect-metadata'].forEach\\(d => console.log\\(d, deps[d] || 'MISSING'\\)\\)\")",
+      "Bash(node -e \"const p = require\\('./package.json'\\); ['react-hook-form','@hookform/resolvers','zod'].forEach\\(d => console.log\\(d, p.dependencies[d] || p.devDependencies?.[d] || 'MISSING'\\)\\)\")",
+      "Bash(npx shadcn@latest add checkbox --yes)"
+    ]
+  }
+}
