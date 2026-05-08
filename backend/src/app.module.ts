@@ -10,6 +10,8 @@ import { WebhookModule } from './webhook/webhook.module.js';
 import { WebSocketModule } from './websocket/websocket.module.js';
 import { AdminSeedService } from './seed/admin-seed.service.js';
 import { ModuleConfigModule } from './module-config/module-config.module.js';
+import { RoomsModule } from './rooms/rooms.module.js';
+import { TablesModule } from './tables/tables.module.js';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ModuleConfigModule } from './module-config/module-config.module.js';
     WebhookModule,
     WebSocketModule,
     ModuleConfigModule,
+    RoomsModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService, AdminSeedService],

@@ -19,6 +19,8 @@ const webhook_module_js_1 = require("./webhook/webhook.module.js");
 const websocket_module_js_1 = require("./websocket/websocket.module.js");
 const admin_seed_service_js_1 = require("./seed/admin-seed.service.js");
 const module_config_module_js_1 = require("./module-config/module-config.module.js");
+const rooms_module_js_1 = require("./rooms/rooms.module.js");
+const tables_module_js_1 = require("./tables/tables.module.js");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -42,6 +44,8 @@ exports.AppModule = AppModule = __decorate([
             webhook_module_js_1.WebhookModule,
             websocket_module_js_1.WebSocketModule,
             module_config_module_js_1.ModuleConfigModule,
+            rooms_module_js_1.RoomsModule,
+            tables_module_js_1.TablesModule,
         ],
         controllers: [app_controller_js_1.AppController],
         providers: [app_service_js_1.AppService, admin_seed_service_js_1.AdminSeedService],
