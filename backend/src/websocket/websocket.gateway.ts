@@ -6,10 +6,12 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { forwardRef, Inject, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
+import { OrdersService } from '../orders/orders.service.js';
+import { OrderStatus } from '../orders/order.entity.js';
 
 @WebSocketGateway({ cors: { origin: process.env.FRONTEND_URL } })
 export class AppWebSocketGateway implements OnGatewayConnection {
@@ -21,6 +23,7 @@ export class AppWebSocketGateway implements OnGatewayConnection {
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    @Inject(forwardRef(() => OrdersService)) private readonly ordersService: OrdersService,
   ) {}
 
   handleConnection(client: Socket): void {
@@ -64,5 +67,21 @@ export class AppWebSocketGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ): void {
     void client.join(room);
+  }
+
+  @SubscribeMessage('item:status')
+  async handleItemStatus(
+    @MessageBody() data: { orderId: string; itemId: string; status: 'pending' | 'preparing' | 'ready' },
+  ): Promise<void> {
+    const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status);
+    this.emitToRoom('kitchen', 'order:updated', order);
+  }
+
+  @SubscribeMessage('order:status')
+  async handleOrderStatus(
+    @MessageBody() data: { orderId: string; status: OrderStatus },
+  ): Promise<void> {
+    const order = await this.ordersService.updateStatus(data.orderId, { status: data.status });
+    this.emitToRoom('kitchen', 'order:updated', order);
   }
 }

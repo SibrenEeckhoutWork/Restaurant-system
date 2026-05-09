@@ -1,7 +1,7 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Order } from './order.entity.js';
+import { Order, OrderStatus } from './order.entity.js';
 import { OrderItem } from './order-item.entity.js';
 import { OrderItemAccessory } from './order-item-accessory.entity.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
@@ -19,7 +19,7 @@ export class OrdersService {
 
   findAll(): Promise<Order[]> {
     return this.orderRepo.find({
-      relations: { table: true, items: { product: { accessories: true }, accessories: { accessory: true } } },
+      relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
       order: { createdAt: 'DESC' },
     });
   }
@@ -27,7 +27,7 @@ export class OrdersService {
   async findById(id: string): Promise<Order> {
     const order = await this.orderRepo.findOne({
       where: { id },
-      relations: { table: true, items: { product: { accessories: true }, accessories: { accessory: true } } },
+      relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
     });
     if (!order) throw new NotFoundException('Order not found');
     return order;
@@ -43,6 +43,10 @@ export class OrdersService {
     const order = await this.findById(id);
     order.status = dto.status;
     await this.orderRepo.save(order);
+    const kitchenStatuses = [OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY] as const;
+    if ((kitchenStatuses as readonly string[]).includes(dto.status)) {
+      await this.itemRepo.update({ orderId: id }, { itemStatus: dto.status as 'pending' | 'preparing' | 'ready' });
+    }
     return this.findById(id);
   }
 
@@ -87,4 +91,28 @@ export class OrdersService {
     }
   }
 
+  async updateItemStatus(
+    orderId: string,
+    itemId: string,
+    status: 'pending' | 'preparing' | 'ready',
+  ): Promise<Order> {
+    await this.itemRepo.update({ id: itemId, orderId }, { itemStatus: status });
+
+    const order = await this.findById(orderId);
+    const statuses = order.items.map((i) => i.itemStatus);
+
+    let next = order.status;
+    if (statuses.every((s) => s === 'ready') && order.status !== OrderStatus.READY) {
+      next = OrderStatus.READY;
+    } else if (statuses.some((s) => s !== 'pending') && order.status === OrderStatus.PENDING) {
+      next = OrderStatus.PREPARING;
+    }
+
+    if (next !== order.status) {
+      order.status = next;
+      await this.orderRepo.save(order);
+    }
+
+    return this.findById(orderId);
+  }
 }

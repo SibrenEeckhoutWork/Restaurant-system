@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -19,13 +21,17 @@ import { UpdateOrderItemsDto } from './dto/update-order-items.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
+import { AppWebSocketGateway } from '../websocket/websocket.gateway.js';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly service: OrdersService) {}
+  constructor(
+    private readonly service: OrdersService,
+    @Inject(forwardRef(() => AppWebSocketGateway)) private readonly gateway: AppWebSocketGateway,
+  ) {}
 
   @Get()
   @RequirePermission('orders.read')
@@ -37,12 +43,18 @@ export class OrdersController {
 
   @Post()
   @RequirePermission('orders.create')
-  create(@Body() dto: CreateOrderDto) { return this.service.create(dto); }
+  async create(@Body() dto: CreateOrderDto) {
+    const order = await this.service.create(dto);
+    this.gateway.emitToRoom('kitchen', 'order:new', order);
+    return order;
+  }
 
   @Patch(':id/status')
   @RequirePermission('orders.update')
-  updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderStatusDto) {
-    return this.service.updateStatus(id, dto);
+  async updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderStatusDto) {
+    const order = await this.service.updateStatus(id, dto);
+    this.gateway.emitToRoom('kitchen', 'order:updated', order);
+    return order;
   }
 
   @Patch(':id/items')

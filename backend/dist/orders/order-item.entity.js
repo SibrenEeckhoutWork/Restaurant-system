@@ -22,6 +22,7 @@ let OrderItem = class OrderItem {
     product;
     quantity;
     notes;
+    itemStatus;
     accessories;
 };
 exports.OrderItem = OrderItem;
@@ -55,6 +56,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
     __metadata("design:type", Object)
 ], OrderItem.prototype, "notes", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 'pending' }),
+    __metadata("design:type", String)
+], OrderItem.prototype, "itemStatus", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => order_item_accessory_entity_js_1.OrderItemAccessory, (a) => a.orderItem, { cascade: true, eager: false }),
     __metadata("design:type", Array)

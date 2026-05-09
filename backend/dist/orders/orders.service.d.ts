@@ -18,4 +18,5 @@ export declare class OrdersService {
     remove(id: string): Promise<void>;
     bulkRemove(ids: string[]): Promise<void>;
     private saveItems;
+    updateItemStatus(orderId: string, itemId: string, status: 'pending' | 'preparing' | 'ready'): Promise<Order>;
 }

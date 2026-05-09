@@ -10,12 +10,13 @@ exports.WebSocketModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const websocket_gateway_js_1 = require("./websocket.gateway.js");
+const orders_module_js_1 = require("../orders/orders.module.js");
 let WebSocketModule = class WebSocketModule {
 };
 exports.WebSocketModule = WebSocketModule;
 exports.WebSocketModule = WebSocketModule = __decorate([
     (0, common_1.Module)({
-        imports: [jwt_1.JwtModule.register({})],
+        imports: [jwt_1.JwtModule.register({}), (0, common_1.forwardRef)(() => orders_module_js_1.OrdersModule)],
         providers: [websocket_gateway_js_1.AppWebSocketGateway],
         exports: [websocket_gateway_js_1.AppWebSocketGateway],
     })

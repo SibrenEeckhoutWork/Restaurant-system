@@ -19,14 +19,17 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const socket_io_1 = require("socket.io");
+const orders_service_js_1 = require("../orders/orders.service.js");
 let AppWebSocketGateway = AppWebSocketGateway_1 = class AppWebSocketGateway {
     jwtService;
     config;
+    ordersService;
     server;
     logger = new common_1.Logger(AppWebSocketGateway_1.name);
-    constructor(jwtService, config) {
+    constructor(jwtService, config, ordersService) {
         this.jwtService = jwtService;
         this.config = config;
+        this.ordersService = ordersService;
     }
     handleConnection(client) {
         const token = client.handshake.auth?.token ??
@@ -60,6 +63,14 @@ let AppWebSocketGateway = AppWebSocketGateway_1 = class AppWebSocketGateway {
     handleJoin(room, client) {
         void client.join(room);
     }
+    async handleItemStatus(data) {
+        const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status);
+        this.emitToRoom('kitchen', 'order:updated', order);
+    }
+    async handleOrderStatus(data) {
+        const order = await this.ordersService.updateStatus(data.orderId, { status: data.status });
+        this.emitToRoom('kitchen', 'order:updated', order);
+    }
 };
 exports.AppWebSocketGateway = AppWebSocketGateway;
 __decorate([
@@ -74,9 +85,25 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], AppWebSocketGateway.prototype, "handleJoin", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('item:status'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppWebSocketGateway.prototype, "handleItemStatus", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('order:status'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AppWebSocketGateway.prototype, "handleOrderStatus", null);
 exports.AppWebSocketGateway = AppWebSocketGateway = AppWebSocketGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: { origin: process.env.FRONTEND_URL } }),
+    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => orders_service_js_1.OrdersService))),
     __metadata("design:paramtypes", [jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        orders_service_js_1.OrdersService])
 ], AppWebSocketGateway);
 //# sourceMappingURL=websocket.gateway.js.map

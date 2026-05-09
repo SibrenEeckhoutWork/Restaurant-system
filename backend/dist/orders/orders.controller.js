@@ -22,16 +22,25 @@ const update_order_items_dto_js_1 = require("./dto/update-order-items.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const websocket_gateway_js_1 = require("../websocket/websocket.gateway.js");
 let OrdersController = class OrdersController {
     service;
-    constructor(service) {
+    gateway;
+    constructor(service, gateway) {
         this.service = service;
+        this.gateway = gateway;
     }
     findAll() { return this.service.findAll(); }
     findOne(id) { return this.service.findById(id); }
-    create(dto) { return this.service.create(dto); }
-    updateStatus(id, dto) {
-        return this.service.updateStatus(id, dto);
+    async create(dto) {
+        const order = await this.service.create(dto);
+        this.gateway.emitToRoom('kitchen', 'order:new', order);
+        return order;
+    }
+    async updateStatus(id, dto) {
+        const order = await this.service.updateStatus(id, dto);
+        this.gateway.emitToRoom('kitchen', 'order:updated', order);
+        return order;
     }
     updateItems(id, dto) {
         return this.service.updateItems(id, dto);
@@ -61,7 +70,7 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_order_dto_js_1.CreateOrderDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
@@ -70,7 +79,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_order_status_dto_js_1.UpdateOrderStatusDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Patch)(':id/items'),
@@ -104,6 +113,8 @@ exports.OrdersController = OrdersController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, swagger_1.ApiTags)('Orders'),
     (0, common_1.Controller)('orders'),
-    __metadata("design:paramtypes", [orders_service_js_1.OrdersService])
+    __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_js_1.AppWebSocketGateway))),
+    __metadata("design:paramtypes", [orders_service_js_1.OrdersService,
+        websocket_gateway_js_1.AppWebSocketGateway])
 ], OrdersController);
 //# sourceMappingURL=orders.controller.js.map

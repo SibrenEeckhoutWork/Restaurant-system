@@ -30,14 +30,14 @@ let OrdersService = class OrdersService {
     }
     findAll() {
         return this.orderRepo.find({
-            relations: { table: true, items: { product: { accessories: true }, accessories: { accessory: true } } },
+            relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
             order: { createdAt: 'DESC' },
         });
     }
     async findById(id) {
         const order = await this.orderRepo.findOne({
             where: { id },
-            relations: { table: true, items: { product: { accessories: true }, accessories: { accessory: true } } },
+            relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
@@ -52,6 +52,10 @@ let OrdersService = class OrdersService {
         const order = await this.findById(id);
         order.status = dto.status;
         await this.orderRepo.save(order);
+        const kitchenStatuses = [order_entity_js_1.OrderStatus.PENDING, order_entity_js_1.OrderStatus.PREPARING, order_entity_js_1.OrderStatus.READY];
+        if (kitchenStatuses.includes(dto.status)) {
+            await this.itemRepo.update({ orderId: id }, { itemStatus: dto.status });
+        }
         return this.findById(id);
     }
     async updateItems(id, dto) {
@@ -84,6 +88,23 @@ let OrdersService = class OrdersService {
                 })));
             }
         }
+    }
+    async updateItemStatus(orderId, itemId, status) {
+        await this.itemRepo.update({ id: itemId, orderId }, { itemStatus: status });
+        const order = await this.findById(orderId);
+        const statuses = order.items.map((i) => i.itemStatus);
+        let next = order.status;
+        if (statuses.every((s) => s === 'ready') && order.status !== order_entity_js_1.OrderStatus.READY) {
+            next = order_entity_js_1.OrderStatus.READY;
+        }
+        else if (statuses.some((s) => s !== 'pending') && order.status === order_entity_js_1.OrderStatus.PENDING) {
+            next = order_entity_js_1.OrderStatus.PREPARING;
+        }
+        if (next !== order.status) {
+            order.status = next;
+            await this.orderRepo.save(order);
+        }
+        return this.findById(orderId);
     }
 };
 exports.OrdersService = OrdersService;
