@@ -33,4 +33,8 @@ export class RoomsService {
     const room = await this.findById(id);
     await this.repo.remove(room);
   }
+
+  async bulkRemove(ids: string[]): Promise<void> {
+    await this.repo.delete(ids);
+  }
 }

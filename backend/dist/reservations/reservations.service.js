@@ -189,6 +189,9 @@ let ReservationsService = class ReservationsService {
         const r = await this.findById(id);
         await this.reservationRepo.remove(r);
     }
+    async bulkRemove(ids) {
+        await this.reservationRepo.delete({ id: (0, typeorm_2.In)(ids) });
+    }
 };
 exports.ReservationsService = ReservationsService;
 exports.ReservationsService = ReservationsService = __decorate([

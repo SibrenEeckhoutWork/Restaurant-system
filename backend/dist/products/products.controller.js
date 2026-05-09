@@ -38,6 +38,7 @@ let CategoriesController = class CategoriesController {
     update(id, dto) {
         return this.service.updateCategory(id, dto);
     }
+    bulkDelete(body) { return this.service.bulkRemoveCategories(body.ids); }
     remove(id) { return this.service.removeCategory(id); }
 };
 exports.CategoriesController = CategoriesController;
@@ -74,6 +75,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "update", null);
 __decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('categories.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], CategoriesController.prototype, "bulkDelete", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.delete'),
@@ -100,6 +110,7 @@ let AllergiesController = class AllergiesController {
     update(id, dto) {
         return this.service.updateAllergy(id, dto);
     }
+    bulkDelete(body) { return this.service.bulkRemoveAllergies(body.ids); }
     remove(id) { return this.service.removeAllergy(id); }
 };
 exports.AllergiesController = AllergiesController;
@@ -136,6 +147,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "update", null);
 __decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('allergies.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AllergiesController.prototype, "bulkDelete", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.delete'),
@@ -160,6 +180,7 @@ let AccessoriesController = class AccessoriesController {
     update(id, dto) {
         return this.service.updateAccessory(id, dto);
     }
+    bulkDelete(body) { return this.service.bulkRemoveAccessories(body.ids); }
     remove(id) { return this.service.removeAccessory(id); }
 };
 exports.AccessoriesController = AccessoriesController;
@@ -196,6 +217,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AccessoriesController.prototype, "update", null);
 __decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('accessories.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AccessoriesController.prototype, "bulkDelete", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('accessories.delete'),
@@ -220,6 +250,7 @@ let ProductsController = class ProductsController {
     update(id, dto) {
         return this.service.updateProduct(id, dto);
     }
+    bulkDelete(body) { return this.service.bulkRemoveProducts(body.ids); }
     remove(id) { return this.service.removeProduct(id); }
 };
 exports.ProductsController = ProductsController;
@@ -255,6 +286,15 @@ __decorate([
     __metadata("design:paramtypes", [String, update_product_dto_js_1.UpdateProductDto]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('products.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductsController.prototype, "bulkDelete", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),

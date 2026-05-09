@@ -130,6 +130,15 @@ export class ReservationsController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('reservations.delete')
+  bulkDelete(@Body() body: { ids: string[] }) {
+    return this.service.bulkRemove(body.ids);
+  }
+
+  @ApiBearerAuth()
   @UseGuards(JwtCustomerGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

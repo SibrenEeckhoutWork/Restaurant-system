@@ -51,6 +51,13 @@ export class TablesController {
     return this.tablesService.update(id, dto);
   }
 
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('tables.delete')
+  bulkDelete(@Body() body: { ids: string[] }) {
+    return this.tablesService.bulkRemove(body.ids);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('tables.delete')

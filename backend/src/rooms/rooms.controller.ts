@@ -50,6 +50,13 @@ export class RoomsController {
     return this.roomsService.update(id, dto);
   }
 
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('rooms.delete')
+  bulkDelete(@Body() body: { ids: string[] }) {
+    return this.roomsService.bulkRemove(body.ids);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('rooms.delete')

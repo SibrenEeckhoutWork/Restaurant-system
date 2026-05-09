@@ -52,6 +52,9 @@ let ProductsService = class ProductsService {
         const c = await this.findCategoryById(id);
         await this.categoryRepo.remove(c);
     }
+    async bulkRemoveCategories(ids) {
+        await this.categoryRepo.delete(ids);
+    }
     findAllAllergies() {
         return this.allergyRepo.find({ order: { name: 'ASC' } });
     }
@@ -73,6 +76,9 @@ let ProductsService = class ProductsService {
         const a = await this.findAllergyById(id);
         await this.allergyRepo.remove(a);
     }
+    async bulkRemoveAllergies(ids) {
+        await this.allergyRepo.delete(ids);
+    }
     findAllAccessories() {
         return this.accessoryRepo.find({ order: { name: 'ASC' } });
     }
@@ -93,6 +99,9 @@ let ProductsService = class ProductsService {
     async removeAccessory(id) {
         const a = await this.findAccessoryById(id);
         await this.accessoryRepo.remove(a);
+    }
+    async bulkRemoveAccessories(ids) {
+        await this.accessoryRepo.delete(ids);
     }
     findAllProducts() {
         return this.productRepo.find({
@@ -154,6 +163,9 @@ let ProductsService = class ProductsService {
     async removeProduct(id) {
         const product = await this.findProductById(id);
         await this.productRepo.remove(product);
+    }
+    async bulkRemoveProducts(ids) {
+        await this.productRepo.delete(ids);
     }
 };
 exports.ProductsService = ProductsService;

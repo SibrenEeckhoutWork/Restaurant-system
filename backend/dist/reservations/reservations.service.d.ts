@@ -33,4 +33,5 @@ export declare class ReservationsService {
     createReservation(dto: CreateReservationDto): Promise<Reservation>;
     updateStatus(id: string, dto: UpdateReservationStatusDto): Promise<Reservation>;
     remove(id: string): Promise<void>;
+    bulkRemove(ids: string[]): Promise<void>;
 }

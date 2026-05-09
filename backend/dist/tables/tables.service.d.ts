@@ -10,4 +10,5 @@ export declare class TablesService {
     create(dto: CreateTableDto): Promise<Table>;
     update(id: string, dto: UpdateTableDto): Promise<Table>;
     remove(id: string): Promise<void>;
+    bulkRemove(ids: string[]): Promise<void>;
 }

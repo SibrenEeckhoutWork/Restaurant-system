@@ -14,6 +14,9 @@ export declare class CategoriesController {
     findOne(id: string): Promise<import("./category.entity.js").Category>;
     create(dto: CreateCategoryDto): Promise<import("./category.entity.js").Category>;
     update(id: string, dto: UpdateCategoryDto): Promise<import("./category.entity.js").Category>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }
 export declare class AllergiesController {
@@ -23,6 +26,9 @@ export declare class AllergiesController {
     findOne(id: string): Promise<import("./allergy.entity.js").Allergy>;
     create(dto: CreateAllergyDto): Promise<import("./allergy.entity.js").Allergy>;
     update(id: string, dto: UpdateAllergyDto): Promise<import("./allergy.entity.js").Allergy>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }
 export declare class AccessoriesController {
@@ -32,6 +38,9 @@ export declare class AccessoriesController {
     findOne(id: string): Promise<import("./accessory.entity.js").Accessory>;
     create(dto: CreateAccessoryDto): Promise<import("./accessory.entity.js").Accessory>;
     update(id: string, dto: UpdateAccessoryDto): Promise<import("./accessory.entity.js").Accessory>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }
 export declare class ProductsController {
@@ -41,5 +50,8 @@ export declare class ProductsController {
     findOne(id: string): Promise<import("./product.entity.js").Product>;
     create(dto: CreateProductDto): Promise<import("./product.entity.js").Product>;
     update(id: string, dto: UpdateProductDto): Promise<import("./product.entity.js").Product>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }

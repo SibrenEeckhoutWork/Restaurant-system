@@ -10,4 +10,5 @@ export declare class RoomsService {
     create(dto: CreateRoomDto): Promise<Room>;
     update(id: string, dto: UpdateRoomDto): Promise<Room>;
     remove(id: string): Promise<void>;
+    bulkRemove(ids: string[]): Promise<void>;
 }

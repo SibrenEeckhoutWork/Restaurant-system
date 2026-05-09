@@ -22,19 +22,23 @@ export declare class ProductsService {
     createCategory(dto: CreateCategoryDto): Promise<Category>;
     updateCategory(id: string, dto: UpdateCategoryDto): Promise<Category>;
     removeCategory(id: string): Promise<void>;
+    bulkRemoveCategories(ids: string[]): Promise<void>;
     findAllAllergies(): Promise<Allergy[]>;
     findAllergyById(id: string): Promise<Allergy>;
     createAllergy(dto: CreateAllergyDto): Promise<Allergy>;
     updateAllergy(id: string, dto: UpdateAllergyDto): Promise<Allergy>;
     removeAllergy(id: string): Promise<void>;
+    bulkRemoveAllergies(ids: string[]): Promise<void>;
     findAllAccessories(): Promise<Accessory[]>;
     findAccessoryById(id: string): Promise<Accessory>;
     createAccessory(dto: CreateAccessoryDto): Promise<Accessory>;
     updateAccessory(id: string, dto: UpdateAccessoryDto): Promise<Accessory>;
     removeAccessory(id: string): Promise<void>;
+    bulkRemoveAccessories(ids: string[]): Promise<void>;
     findAllProducts(): Promise<Product[]>;
     findProductById(id: string): Promise<Product>;
     createProduct(dto: CreateProductDto): Promise<Product>;
     updateProduct(id: string, dto: UpdateProductDto): Promise<Product>;
     removeProduct(id: string): Promise<void>;
+    bulkRemoveProducts(ids: string[]): Promise<void>;
 }

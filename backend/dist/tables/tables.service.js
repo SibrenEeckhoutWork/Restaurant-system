@@ -47,6 +47,9 @@ let TablesService = class TablesService {
         const table = await this.findById(id);
         await this.repo.remove(table);
     }
+    async bulkRemove(ids) {
+        await this.repo.delete({ id: (0, typeorm_2.In)(ids) });
+    }
 };
 exports.TablesService = TablesService;
 exports.TablesService = TablesService = __decorate([

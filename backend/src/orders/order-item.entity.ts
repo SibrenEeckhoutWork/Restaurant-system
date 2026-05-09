@@ -3,13 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  ManyToMany,
+  OneToMany,
   JoinColumn,
-  JoinTable,
 } from 'typeorm';
 import { Order } from './order.entity.js';
 import { Product } from '../products/product.entity.js';
-import { Accessory } from '../products/accessory.entity.js';
+import { OrderItemAccessory } from './order-item-accessory.entity.js';
 
 @Entity('order_items')
 export class OrderItem {
@@ -36,7 +35,6 @@ export class OrderItem {
   @Column({ nullable: true, type: 'text' })
   notes: string | null;
 
-  @ManyToMany(() => Accessory, { eager: false })
-  @JoinTable({ name: 'order_item_accessories' })
-  accessories: Accessory[];
+  @OneToMany(() => OrderItemAccessory, (a) => a.orderItem, { cascade: true, eager: false })
+  accessories: OrderItemAccessory[];
 }

@@ -52,6 +52,11 @@ export class CategoriesController {
     return this.service.updateCategory(id, dto);
   }
 
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('categories.delete')
+  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveCategories(body.ids); }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('categories.delete')
@@ -81,6 +86,11 @@ export class AllergiesController {
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAllergyDto) {
     return this.service.updateAllergy(id, dto);
   }
+
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('allergies.delete')
+  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveAllergies(body.ids); }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -112,6 +122,11 @@ export class AccessoriesController {
     return this.service.updateAccessory(id, dto);
   }
 
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('accessories.delete')
+  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveAccessories(body.ids); }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('accessories.delete')
@@ -141,6 +156,11 @@ export class ProductsController {
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto) {
     return this.service.updateProduct(id, dto);
   }
+
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('products.delete')
+  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveProducts(body.ids); }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

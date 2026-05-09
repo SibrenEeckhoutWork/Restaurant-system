@@ -201,4 +201,8 @@ export class ReservationsService {
     const r = await this.findById(id);
     await this.reservationRepo.remove(r);
   }
+
+  async bulkRemove(ids: string[]): Promise<void> {
+    await this.reservationRepo.delete({ id: In(ids) });
+  }
 }

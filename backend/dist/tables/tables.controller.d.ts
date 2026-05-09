@@ -8,5 +8,8 @@ export declare class TablesController {
     findOne(id: string): Promise<import("./table.entity.js").Table>;
     create(dto: CreateTableDto): Promise<import("./table.entity.js").Table>;
     update(id: string, dto: UpdateTableDto): Promise<import("./table.entity.js").Table>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }

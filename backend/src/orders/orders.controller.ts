@@ -51,6 +51,11 @@ export class OrdersController {
     return this.service.updateItems(id, dto);
   }
 
+  @Delete('bulk')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('orders.delete')
+  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemove(body.ids); }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('orders.delete')

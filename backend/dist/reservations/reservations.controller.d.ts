@@ -17,5 +17,8 @@ export declare class ReservationsController {
     findOne(id: string): Promise<import("./reservation.entity.js").Reservation>;
     updateStatus(id: string, dto: UpdateReservationStatusDto): Promise<import("./reservation.entity.js").Reservation>;
     createForCustomer(dto: CreateReservationDto): Promise<import("./reservation.entity.js").Reservation>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     removeForCustomer(id: string): Promise<void>;
 }

@@ -8,5 +8,8 @@ export declare class RoomsController {
     findOne(id: string): Promise<import("./room.entity.js").Room>;
     create(dto: CreateRoomDto): Promise<import("./room.entity.js").Room>;
     update(id: string, dto: UpdateRoomDto): Promise<import("./room.entity.js").Room>;
+    bulkDelete(body: {
+        ids: string[];
+    }): Promise<void>;
     remove(id: string): Promise<void>;
 }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Table } from './table.entity.js';
 import { CreateTableDto } from './dto/create-table.dto.js';
 import { UpdateTableDto } from './dto/update-table.dto.js';
@@ -36,5 +36,9 @@ export class TablesService {
   async remove(id: string): Promise<void> {
     const table = await this.findById(id);
     await this.repo.remove(table);
+  }
+
+  async bulkRemove(ids: string[]): Promise<void> {
+    await this.repo.delete({ id: In(ids) });
   }
 }

@@ -1,4 +1,14 @@
-import { IsArray, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class OrderItemAccessoryDto {
+  @IsUUID()
+  accessoryId: string;
+
+  @IsInt()
+  @Min(1)
+  quantity: number;
+}
 
 export class CreateOrderItemDto {
   @IsUUID()
@@ -14,6 +24,7 @@ export class CreateOrderItemDto {
 
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
-  accessoryIds?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemAccessoryDto)
+  accessories?: OrderItemAccessoryDto[];
 }

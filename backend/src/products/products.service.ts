@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Product } from './product.entity.js';
@@ -23,7 +23,7 @@ export class ProductsService {
     @InjectRepository(Accessory) private readonly accessoryRepo: Repository<Accessory>,
   ) {}
 
-  // ── Categories ────────────────────────────────────────────────────────────
+  // â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   findAllCategories(): Promise<Category[]> {
     return this.categoryRepo.find({ order: { sortOrder: 'ASC', name: 'ASC' } });
@@ -50,7 +50,11 @@ export class ProductsService {
     await this.categoryRepo.remove(c);
   }
 
-  // ── Allergies ─────────────────────────────────────────────────────────────
+  async bulkRemoveCategories(ids: string[]): Promise<void> {
+    await this.categoryRepo.delete(ids);
+  }
+
+  // â”€â”€ Allergies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   findAllAllergies(): Promise<Allergy[]> {
     return this.allergyRepo.find({ order: { name: 'ASC' } });
@@ -77,7 +81,11 @@ export class ProductsService {
     await this.allergyRepo.remove(a);
   }
 
-  // ── Accessories ───────────────────────────────────────────────────────────
+  async bulkRemoveAllergies(ids: string[]): Promise<void> {
+    await this.allergyRepo.delete(ids);
+  }
+
+  // â”€â”€ Accessories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   findAllAccessories(): Promise<Accessory[]> {
     return this.accessoryRepo.find({ order: { name: 'ASC' } });
@@ -104,7 +112,11 @@ export class ProductsService {
     await this.accessoryRepo.remove(a);
   }
 
-  // ── Products ──────────────────────────────────────────────────────────────
+  async bulkRemoveAccessories(ids: string[]): Promise<void> {
+    await this.accessoryRepo.delete(ids);
+  }
+
+  // â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   findAllProducts(): Promise<Product[]> {
     return this.productRepo.find({
@@ -168,4 +180,9 @@ export class ProductsService {
     const product = await this.findProductById(id);
     await this.productRepo.remove(product);
   }
+
+  async bulkRemoveProducts(ids: string[]): Promise<void> {
+    await this.productRepo.delete(ids);
+  }
 }
+

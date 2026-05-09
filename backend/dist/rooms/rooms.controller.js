@@ -38,6 +38,9 @@ let RoomsController = class RoomsController {
     update(id, dto) {
         return this.roomsService.update(id, dto);
     }
+    bulkDelete(body) {
+        return this.roomsService.bulkRemove(body.ids);
+    }
     remove(id) {
         return this.roomsService.remove(id);
     }
@@ -75,6 +78,15 @@ __decorate([
     __metadata("design:paramtypes", [String, update_room_dto_js_1.UpdateRoomDto]),
     __metadata("design:returntype", void 0)
 ], RoomsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('rooms.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], RoomsController.prototype, "bulkDelete", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),

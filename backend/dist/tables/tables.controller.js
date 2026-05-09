@@ -38,6 +38,9 @@ let TablesController = class TablesController {
     update(id, dto) {
         return this.tablesService.update(id, dto);
     }
+    bulkDelete(body) {
+        return this.tablesService.bulkRemove(body.ids);
+    }
     remove(id) {
         return this.tablesService.remove(id);
     }
@@ -76,6 +79,15 @@ __decorate([
     __metadata("design:paramtypes", [String, update_table_dto_js_1.UpdateTableDto]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)('bulk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, require_permission_decorator_js_1.RequirePermission)('tables.delete'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], TablesController.prototype, "bulkDelete", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
