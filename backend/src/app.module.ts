@@ -12,6 +12,7 @@ import { AdminSeedService } from './seed/admin-seed.service.js';
 import { ModuleConfigModule } from './module-config/module-config.module.js';
 import { RoomsModule } from './rooms/rooms.module.js';
 import { TablesModule } from './tables/tables.module.js';
+import { ReservationsModule } from './reservations/reservations.module.js';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TablesModule } from './tables/tables.module.js';
     ModuleConfigModule,
     RoomsModule,
     TablesModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, AdminSeedService],

@@ -1,0 +1,1 @@
+{"version":3,"file":"update-reservation-status.dto.js","sourceRoot":"","sources":["../../../src/reservations/dto/update-reservation-status.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAAyC;AACzC,6CAA8C;AAC9C,oEAA6D;AAE7D,MAAa,0BAA0B;IAGrC,MAAM,CAAoB;CAC3B;AAJD,gEAIC;AADC;IAFC,IAAA,qBAAW,EAAC,EAAE,IAAI,EAAE,yCAAiB,EAAE,CAAC;IACxC,IAAA,wBAAM,EAAC,yCAAiB,CAAC;;0DACA"}
