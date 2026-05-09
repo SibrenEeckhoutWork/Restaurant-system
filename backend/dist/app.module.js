@@ -22,6 +22,7 @@ const module_config_module_js_1 = require("./module-config/module-config.module.
 const rooms_module_js_1 = require("./rooms/rooms.module.js");
 const tables_module_js_1 = require("./tables/tables.module.js");
 const reservations_module_js_1 = require("./reservations/reservations.module.js");
+const products_module_js_1 = require("./products/products.module.js");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -48,6 +49,7 @@ exports.AppModule = AppModule = __decorate([
             rooms_module_js_1.RoomsModule,
             tables_module_js_1.TablesModule,
             reservations_module_js_1.ReservationsModule,
+            products_module_js_1.ProductsModule,
         ],
         controllers: [app_controller_js_1.AppController],
         providers: [app_service_js_1.AppService, admin_seed_service_js_1.AdminSeedService],
