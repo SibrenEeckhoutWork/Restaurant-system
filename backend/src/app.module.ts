@@ -14,6 +14,7 @@ import { RoomsModule } from './rooms/rooms.module.js';
 import { TablesModule } from './tables/tables.module.js';
 import { ReservationsModule } from './reservations/reservations.module.js';
 import { ProductsModule } from './products/products.module.js';
+import { OrdersModule } from './orders/orders.module.js';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ProductsModule } from './products/products.module.js';
     TablesModule,
     ReservationsModule,
     ProductsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService, AdminSeedService],
