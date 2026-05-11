@@ -5,9 +5,11 @@ import { useEffect, useRef } from 'react';
 interface Props {
   children: React.ReactNode;
   className?: string;
+  id?: string;
+  style?: React.CSSProperties;
 }
 
-export default function RevealSection({ children, className = '' }: Props) {
+export default function RevealSection({ children, className = '', id, style }: Props) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function RevealSection({ children, className = '' }: Props) {
   }, []);
 
   return (
-    <section ref={ref} data-reveal className={className}>
+    <section ref={ref} data-reveal className={className} id={id} style={style}>
       {children}
     </section>
   );

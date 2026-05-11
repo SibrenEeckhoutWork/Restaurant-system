@@ -8,6 +8,7 @@ import {
   ProductsController,
   CategoriesController,
   AllergiesController,
+  MenuController,
 } from './products.controller.js';
 import { UsersModule } from '../users/users.module.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
@@ -19,7 +20,7 @@ import { ModuleConfigModule } from '../module-config/module-config.module.js';
     ModuleConfigModule,
   ],
   providers: [ProductsService],
-  controllers: [ProductsController, CategoriesController, AllergiesController],
+  controllers: [ProductsController, CategoriesController, AllergiesController, MenuController],
   exports: [ProductsService],
 })
 export class ProductsModule {}

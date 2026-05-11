@@ -23,10 +23,19 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionGuard)
+// ── Public menu (no auth) ────────────────────────────────────────────────────
+@ApiTags('Menu')
+@Controller('menu')
+export class MenuController {
+  constructor(private readonly service: ProductsService) {}
+
+  @Get()
+  getMenu() { return this.service.findMenu(); }
+}
 
 // ── Categories ────────────────────────────────────────────────────────────────
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
@@ -62,6 +71,8 @@ export class CategoriesController {
 }
 
 // ── Allergies ─────────────────────────────────────────────────────────────────
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiTags('Allergies')
 @Controller('allergies')
 export class AllergiesController {
@@ -97,6 +108,8 @@ export class AllergiesController {
 }
 
 // ── Products ──────────────────────────────────────────────────────────────────
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {

@@ -25,6 +25,12 @@ export declare class ProductsService {
     updateAllergy(id: string, dto: UpdateAllergyDto): Promise<Allergy>;
     removeAllergy(id: string): Promise<void>;
     bulkRemoveAllergies(ids: string[]): Promise<void>;
+    findMenu(): Promise<{
+        id: string;
+        name: string;
+        sortOrder: number;
+        products: Product[];
+    }[]>;
     findAllProducts(): Promise<Product[]>;
     findProductById(id: string): Promise<Product>;
     createProduct(dto: CreateProductDto): Promise<Product>;

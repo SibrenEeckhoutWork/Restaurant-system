@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductsController = exports.AllergiesController = exports.CategoriesController = void 0;
+exports.ProductsController = exports.AllergiesController = exports.CategoriesController = exports.MenuController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const products_service_js_1 = require("./products.service.js");
@@ -25,6 +25,25 @@ const update_allergy_dto_js_1 = require("./dto/update-allergy.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+let MenuController = class MenuController {
+    service;
+    constructor(service) {
+        this.service = service;
+    }
+    getMenu() { return this.service.findMenu(); }
+};
+exports.MenuController = MenuController;
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], MenuController.prototype, "getMenu", null);
+exports.MenuController = MenuController = __decorate([
+    (0, swagger_1.ApiTags)('Menu'),
+    (0, common_1.Controller)('menu'),
+    __metadata("design:paramtypes", [products_service_js_1.ProductsService])
+], MenuController);
 let CategoriesController = class CategoriesController {
     service;
     constructor(service) {
@@ -163,6 +182,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "remove", null);
 exports.AllergiesController = AllergiesController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, swagger_1.ApiTags)('Allergies'),
     (0, common_1.Controller)('allergies'),
     __metadata("design:paramtypes", [products_service_js_1.ProductsService])
@@ -233,6 +254,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "remove", null);
 exports.ProductsController = ProductsController = __decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, swagger_1.ApiTags)('Products'),
     (0, common_1.Controller)('products'),
     __metadata("design:paramtypes", [products_service_js_1.ProductsService])

@@ -76,6 +76,23 @@ let ProductsService = class ProductsService {
     async bulkRemoveAllergies(ids) {
         await this.allergyRepo.delete(ids);
     }
+    async findMenu() {
+        const products = await this.productRepo.find({
+            where: { isAvailable: true },
+            relations: { category: true, allergies: true, accessories: true },
+            order: { name: 'ASC' },
+        });
+        const map = new Map();
+        for (const p of products) {
+            if (!p.category)
+                continue;
+            if (!map.has(p.categoryId)) {
+                map.set(p.categoryId, { id: p.categoryId, name: p.category.name, sortOrder: p.category.sortOrder ?? 0, products: [] });
+            }
+            map.get(p.categoryId).products.push(p);
+        }
+        return [...map.values()].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+    }
     findAllProducts() {
         return this.productRepo.find({
             relations: { category: true, allergies: true, accessories: true },

@@ -5,6 +5,16 @@ import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { CreateAllergyDto } from './dto/create-allergy.dto.js';
 import { UpdateAllergyDto } from './dto/update-allergy.dto.js';
+export declare class MenuController {
+    private readonly service;
+    constructor(service: ProductsService);
+    getMenu(): Promise<{
+        id: string;
+        name: string;
+        sortOrder: number;
+        products: import("./product.entity.js").Product[];
+    }[]>;
+}
 export declare class CategoriesController {
     private readonly service;
     constructor(service: ProductsService);

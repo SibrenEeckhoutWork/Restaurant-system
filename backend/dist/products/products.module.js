@@ -27,7 +27,7 @@ exports.ProductsModule = ProductsModule = __decorate([
             module_config_module_js_1.ModuleConfigModule,
         ],
         providers: [products_service_js_1.ProductsService],
-        controllers: [products_controller_js_1.ProductsController, products_controller_js_1.CategoriesController, products_controller_js_1.AllergiesController],
+        controllers: [products_controller_js_1.ProductsController, products_controller_js_1.CategoriesController, products_controller_js_1.AllergiesController, products_controller_js_1.MenuController],
         exports: [products_service_js_1.ProductsService],
     })
 ], ProductsModule);

@@ -1,12 +1,13 @@
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL!;
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? '';
 
 class WebSocketService {
   private socket: Socket | null = null;
 
-  connect(token: string): void {
+  async connect(token: string): Promise<void> {
     if (this.socket?.connected) return;
+    const { io } = await import('socket.io-client');
     this.socket = io(WS_URL, {
       auth: { token },
       transports: ['websocket'],
