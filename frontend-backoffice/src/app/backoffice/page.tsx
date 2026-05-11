@@ -162,7 +162,7 @@ export default function BackofficePage() {
                   {liveOrders.map((order) => (
                     <div key={order.id} className="flex items-center justify-between px-6 py-3">
                       <div>
-                        <p className="text-sm font-medium">{order.table.name}</p>
+                        <p className="text-sm font-medium">{order.table?.name ?? order.customerName ?? 'Online bestelling'}</p>
                         <p className="text-xs text-muted-foreground">
                           {order.items.length} item{order.items.length !== 1 ? 's' : ''} · {formatTime(order.createdAt)}
                         </p>

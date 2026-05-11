@@ -23,8 +23,6 @@ import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
 import { AppWebSocketGateway } from '../websocket/websocket.gateway.js';
 
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionGuard)
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
@@ -33,43 +31,54 @@ export class OrdersController {
     @Inject(forwardRef(() => AppWebSocketGateway)) private readonly gateway: AppWebSocketGateway,
   ) {}
 
-  @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('orders.read')
+  @Get()
   findAll() { return this.service.findAll(); }
 
-  @Get(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('orders.read')
+  @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findById(id); }
 
   @Post()
-  @RequirePermission('orders.create')
   async create(@Body() dto: CreateOrderDto) {
     const order = await this.service.create(dto);
     this.gateway.emitToRoom('kitchen', 'order:new', order);
     return order;
   }
 
-  @Patch(':id/status')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('orders.update')
+  @Patch(':id/status')
   async updateStatus(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderStatusDto) {
     const order = await this.service.updateStatus(id, dto);
     this.gateway.emitToRoom('kitchen', 'order:updated', order);
     return order;
   }
 
-  @Patch(':id/items')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @RequirePermission('orders.update')
+  @Patch(':id/items')
   updateItems(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderItemsDto) {
     return this.service.updateItems(id, dto);
   }
 
-  @Delete('bulk')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('orders.delete')
+  @Delete('bulk')
   bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemove(body.ids); }
 
-  @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PermissionGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('orders.delete')
+  @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.remove(id); }
 }

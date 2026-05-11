@@ -50,15 +50,19 @@ let OrdersController = class OrdersController {
 };
 exports.OrdersController = OrdersController;
 __decorate([
-    (0, common_1.Get)(),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.read'),
+    (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.read'),
+    (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -66,15 +70,16 @@ __decorate([
 ], OrdersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, require_permission_decorator_js_1.RequirePermission)('orders.create'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_order_dto_js_1.CreateOrderDto]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "create", null);
 __decorate([
-    (0, common_1.Patch)(':id/status'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.update'),
+    (0, common_1.Patch)(':id/status'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -82,8 +87,10 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
-    (0, common_1.Patch)(':id/items'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.update'),
+    (0, common_1.Patch)(':id/items'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -91,26 +98,28 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateItems", null);
 __decorate([
-    (0, common_1.Delete)('bulk'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.delete'),
+    (0, common_1.Delete)('bulk'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "bulkDelete", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.delete'),
+    (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "remove", null);
 exports.OrdersController = OrdersController = __decorate([
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, swagger_1.ApiTags)('Orders'),
     (0, common_1.Controller)('orders'),
     __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_js_1.AppWebSocketGateway))),

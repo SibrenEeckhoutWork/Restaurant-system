@@ -19,14 +19,17 @@ const typeorm_2 = require("typeorm");
 const order_entity_js_1 = require("./order.entity.js");
 const order_item_entity_js_1 = require("./order-item.entity.js");
 const order_item_accessory_entity_js_1 = require("./order-item-accessory.entity.js");
+const customers_service_js_1 = require("../customers/customers.service.js");
 let OrdersService = class OrdersService {
     orderRepo;
     itemRepo;
     itemAccRepo;
-    constructor(orderRepo, itemRepo, itemAccRepo) {
+    customersService;
+    constructor(orderRepo, itemRepo, itemAccRepo, customersService) {
         this.orderRepo = orderRepo;
         this.itemRepo = itemRepo;
         this.itemAccRepo = itemAccRepo;
+        this.customersService = customersService;
     }
     findAll() {
         return this.orderRepo.find({
@@ -44,7 +47,20 @@ let OrdersService = class OrdersService {
         return order;
     }
     async create(dto) {
-        const order = await this.orderRepo.save(this.orderRepo.create({ tableId: dto.tableId }));
+        let customerId = null;
+        if (dto.email) {
+            const customer = await this.customersService.findByEmail(dto.email);
+            customerId = customer?.id ?? null;
+        }
+        const order = await this.orderRepo.save(this.orderRepo.create({
+            tableId: dto.tableId ?? null,
+            customerName: dto.customerName ?? null,
+            email: dto.email ?? null,
+            phone: dto.phone ?? null,
+            address: dto.address ?? null,
+            deliveryType: dto.deliveryType ?? null,
+            customerId,
+        }));
         await this.saveItems(order.id, dto.items);
         return this.findById(order.id);
     }
@@ -52,9 +68,15 @@ let OrdersService = class OrdersService {
         const order = await this.findById(id);
         order.status = dto.status;
         await this.orderRepo.save(order);
-        const kitchenStatuses = [order_entity_js_1.OrderStatus.PENDING, order_entity_js_1.OrderStatus.PREPARING, order_entity_js_1.OrderStatus.READY];
-        if (kitchenStatuses.includes(dto.status)) {
-            await this.itemRepo.update({ orderId: id }, { itemStatus: dto.status });
+        const syncStatuses = {
+            [order_entity_js_1.OrderStatus.PENDING]: 'pending',
+            [order_entity_js_1.OrderStatus.PREPARING]: 'preparing',
+            [order_entity_js_1.OrderStatus.READY]: 'ready',
+            [order_entity_js_1.OrderStatus.DELIVERED]: 'delivered',
+        };
+        const itemStatus = syncStatuses[dto.status];
+        if (itemStatus) {
+            await this.itemRepo.update({ orderId: id }, { itemStatus });
         }
         return this.findById(id);
     }
@@ -94,7 +116,10 @@ let OrdersService = class OrdersService {
         const order = await this.findById(orderId);
         const statuses = order.items.map((i) => i.itemStatus);
         let next = order.status;
-        if (statuses.every((s) => s === 'ready') && order.status !== order_entity_js_1.OrderStatus.READY) {
+        if (statuses.every((s) => s === 'delivered') && order.status !== order_entity_js_1.OrderStatus.DELIVERED) {
+            next = order_entity_js_1.OrderStatus.DELIVERED;
+        }
+        else if (statuses.every((s) => s === 'ready' || s === 'delivered') && order.status !== order_entity_js_1.OrderStatus.READY && order.status !== order_entity_js_1.OrderStatus.DELIVERED) {
             next = order_entity_js_1.OrderStatus.READY;
         }
         else if (statuses.some((s) => s !== 'pending') && order.status === order_entity_js_1.OrderStatus.PENDING) {
@@ -115,6 +140,7 @@ exports.OrdersService = OrdersService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(order_item_accessory_entity_js_1.OrderItemAccessory)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        customers_service_js_1.CustomersService])
 ], OrdersService);
 //# sourceMappingURL=orders.service.js.map

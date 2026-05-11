@@ -8,6 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import { UpdateOrderItemsDto } from './dto/update-order-items.dto.js';
 import { CreateOrderItemDto } from './dto/create-order-item.dto.js';
+import { CustomersService } from '../customers/customers.service.js';
 
 @Injectable()
 export class OrdersService {
@@ -15,6 +16,7 @@ export class OrdersService {
     @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
     @InjectRepository(OrderItem) private readonly itemRepo: Repository<OrderItem>,
     @InjectRepository(OrderItemAccessory) private readonly itemAccRepo: Repository<OrderItemAccessory>,
+    private readonly customersService: CustomersService,
   ) {}
 
   findAll(): Promise<Order[]> {
@@ -34,7 +36,22 @@ export class OrdersService {
   }
 
   async create(dto: CreateOrderDto): Promise<Order> {
-    const order = await this.orderRepo.save(this.orderRepo.create({ tableId: dto.tableId }));
+    let customerId: string | null = null;
+    if (dto.email) {
+      const customer = await this.customersService.findByEmail(dto.email);
+      customerId = customer?.id ?? null;
+    }
+    const order = await this.orderRepo.save(
+      this.orderRepo.create({
+        tableId: dto.tableId ?? null,
+        customerName: dto.customerName ?? null,
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
+        address: dto.address ?? null,
+        deliveryType: dto.deliveryType ?? null,
+        customerId,
+      }),
+    );
     await this.saveItems(order.id, dto.items);
     return this.findById(order.id);
   }
@@ -43,9 +60,15 @@ export class OrdersService {
     const order = await this.findById(id);
     order.status = dto.status;
     await this.orderRepo.save(order);
-    const kitchenStatuses = [OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY] as const;
-    if ((kitchenStatuses as readonly string[]).includes(dto.status)) {
-      await this.itemRepo.update({ orderId: id }, { itemStatus: dto.status as 'pending' | 'preparing' | 'ready' });
+    const syncStatuses: Partial<Record<string, 'pending' | 'preparing' | 'ready' | 'delivered'>> = {
+      [OrderStatus.PENDING]: 'pending',
+      [OrderStatus.PREPARING]: 'preparing',
+      [OrderStatus.READY]: 'ready',
+      [OrderStatus.DELIVERED]: 'delivered',
+    };
+    const itemStatus = syncStatuses[dto.status];
+    if (itemStatus) {
+      await this.itemRepo.update({ orderId: id }, { itemStatus });
     }
     return this.findById(id);
   }
@@ -94,7 +117,7 @@ export class OrdersService {
   async updateItemStatus(
     orderId: string,
     itemId: string,
-    status: 'pending' | 'preparing' | 'ready',
+    status: 'pending' | 'preparing' | 'ready' | 'delivered',
   ): Promise<Order> {
     await this.itemRepo.update({ id: itemId, orderId }, { itemStatus: status });
 
@@ -102,7 +125,9 @@ export class OrdersService {
     const statuses = order.items.map((i) => i.itemStatus);
 
     let next = order.status;
-    if (statuses.every((s) => s === 'ready') && order.status !== OrderStatus.READY) {
+    if (statuses.every((s) => s === 'delivered') && order.status !== OrderStatus.DELIVERED) {
+      next = OrderStatus.DELIVERED;
+    } else if (statuses.every((s) => s === 'ready' || s === 'delivered') && order.status !== OrderStatus.READY && order.status !== OrderStatus.DELIVERED) {
       next = OrderStatus.READY;
     } else if (statuses.some((s) => s !== 'pending') && order.status === OrderStatus.PENDING) {
       next = OrderStatus.PREPARING;

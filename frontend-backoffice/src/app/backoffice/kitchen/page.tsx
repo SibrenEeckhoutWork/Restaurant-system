@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 const ACTIVE_STATUSES: OrderStatus[] = ['pending', 'preparing', 'ready', 'delivered'];
 
-type ColumnStatus = ItemStatus | 'delivered';
+type ColumnStatus = ItemStatus;
 
 const COLUMNS: { status: ColumnStatus; label: string; color: string }[] = [
   { status: 'pending', label: 'Nieuw', color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950/20' },
@@ -20,12 +20,13 @@ const COLUMNS: { status: ColumnStatus; label: string; color: string }[] = [
   { status: 'delivered', label: 'Geleverd', color: 'border-gray-400 bg-gray-50 dark:bg-gray-950/20' },
 ];
 
-const STATUS_RANK: Record<ItemStatus, number> = { pending: 0, preparing: 1, ready: 2 };
+const STATUS_RANK: Record<ItemStatus, number> = { pending: 0, preparing: 1, ready: 2, delivered: 3 };
 
 const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
   pending: 'Wacht',
   preparing: 'Bezig',
   ready: 'Klaar',
+  delivered: 'Geleverd',
 };
 
 const COLUMN_STATUS_LABELS: Record<ColumnStatus, string> = {
@@ -39,6 +40,7 @@ const ITEM_STATUS_COLORS: Record<ItemStatus, string> = {
   pending: 'bg-muted text-muted-foreground',
   preparing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   ready: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  delivered: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-400',
 };
 
 const ORDER_STATUS_COLOR: Record<ColumnStatus, string> = {
@@ -51,7 +53,8 @@ const ORDER_STATUS_COLOR: Record<ColumnStatus, string> = {
 const NEXT_ITEM_STATUS: Record<ItemStatus, ItemStatus | null> = {
   pending: 'preparing',
   preparing: 'ready',
-  ready: null,
+  ready: 'delivered',
+  delivered: null,
 };
 
 const NEXT_ORDER_STATUS: Record<ColumnStatus, ColumnStatus | null> = {
@@ -94,7 +97,7 @@ function OrderCard({ order, onDragStart, onItemAdvance, onOrderAdvance }: OrderC
       }}
     >
       <div className="flex items-center justify-between">
-        <span className="font-semibold text-sm">{order.table.name}</span>
+        <span className="font-semibold text-sm">{order.table?.name ?? order.customerName ?? 'Online'}</span>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{formatTime(order.createdAt)}</span>
           {nextOrderStatus && (
@@ -167,7 +170,7 @@ function ItemCard({ order, item, onDragStart, onAdvance }: ItemCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className={cn('size-2 rounded-full shrink-0', ORDER_STATUS_COLOR[getEffectiveStatus(order)])} title={`Order: ${COLUMN_STATUS_LABELS[getEffectiveStatus(order)]}`} />
-          <span className="text-xs text-muted-foreground font-medium">{order.table.name}</span>
+          <span className="text-xs text-muted-foreground font-medium">{order.table?.name ?? order.customerName ?? 'Online'}</span>
         </div>
         <span className="text-xs text-muted-foreground">{formatTime(order.createdAt)}</span>
       </div>
@@ -277,10 +280,14 @@ export default function KitchenPage() {
 
   const handleDrop = (targetStatus: ColumnStatus) => {
     setDragOverStatus(null);
-    if (filterActive && dragItem && targetStatus !== 'delivered') {
+    if (filterActive && dragItem) {
       const { orderId, itemId } = dragItem;
       setDragItem(null);
-      webSocketService.emit('item:status', { orderId, itemId, status: targetStatus as ItemStatus });
+      if (targetStatus === 'delivered') {
+        webSocketService.emit('order:status', { orderId, status: 'delivered' });
+      } else {
+        webSocketService.emit('item:status', { orderId, itemId, status: targetStatus as ItemStatus });
+      }
     } else if (!filterActive && dragOrderId) {
       const id = dragOrderId;
       setDragOrderId(null);
@@ -303,18 +310,13 @@ export default function KitchenPage() {
   const ordersByStatus = (status: ColumnStatus) =>
     orders.filter((o) => getEffectiveStatus(o) === status);
 
-  // Filter mode: group items by itemStatus; delivered = items from delivered orders
+  // Filter mode: group items by their itemStatus directly
   const itemsByStatus = (status: ColumnStatus) => {
     const result: { order: Order; item: OrderItem }[] = [];
     for (const order of orders) {
       for (const item of order.items) {
         if (!selectedCategoryIds.has(item.product.categoryId)) continue;
-        const match = status === 'delivered'
-          ? order.status === 'delivered'
-          : item.itemStatus === status && order.status !== 'delivered';
-        if (match) {
-          result.push({ order, item });
-        }
+        if (item.itemStatus === status) result.push({ order, item });
       }
     }
     return result;

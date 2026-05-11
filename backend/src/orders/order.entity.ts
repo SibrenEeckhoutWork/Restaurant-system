@@ -24,12 +24,31 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  tableId: string;
+  @Column({ nullable: true, type: 'uuid' })
+  tableId: string | null;
 
-  @ManyToOne(() => Table, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Table, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'tableId' })
-  table: Table;
+  table: Table | null;
+
+  // Online order customer fields (null for dine-in orders)
+  @Column({ nullable: true, type: 'text' })
+  customerName: string | null;
+
+  @Column({ nullable: true, type: 'text' })
+  email: string | null;
+
+  @Column({ nullable: true, type: 'text' })
+  phone: string | null;
+
+  @Column({ nullable: true, type: 'text' })
+  address: string | null;
+
+  @Column({ nullable: true, type: 'varchar', length: 20 })
+  deliveryType: 'delivery' | 'pickup' | null;
+
+  @Column({ nullable: true, type: 'uuid' })
+  customerId: string | null;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;

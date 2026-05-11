@@ -13,8 +13,16 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3002',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ];
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+      else cb(new Error(`CORS blocked: ${origin}`));
+    },
     credentials: true,
   });
 

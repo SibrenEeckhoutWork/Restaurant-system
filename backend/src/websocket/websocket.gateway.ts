@@ -13,7 +13,16 @@ import { Server, Socket } from 'socket.io';
 import { OrdersService } from '../orders/orders.service.js';
 import { OrderStatus } from '../orders/order.entity.js';
 
-@WebSocketGateway({ cors: { origin: process.env.FRONTEND_URL } })
+@WebSocketGateway({
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3002',
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    ],
+    credentials: true,
+  },
+})
 export class AppWebSocketGateway implements OnGatewayConnection {
   @WebSocketServer()
   private readonly server: Server;
@@ -71,7 +80,7 @@ export class AppWebSocketGateway implements OnGatewayConnection {
 
   @SubscribeMessage('item:status')
   async handleItemStatus(
-    @MessageBody() data: { orderId: string; itemId: string; status: 'pending' | 'preparing' | 'ready' },
+    @MessageBody() data: { orderId: string; itemId: string; status: 'pending' | 'preparing' | 'ready' | 'delivered' },
   ): Promise<void> {
     const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status);
     this.emitToRoom('kitchen', 'order:updated', order);

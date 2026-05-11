@@ -17,6 +17,7 @@ const orders_controller_js_1 = require("./orders.controller.js");
 const users_module_js_1 = require("../users/users.module.js");
 const module_config_module_js_1 = require("../module-config/module-config.module.js");
 const websocket_module_js_1 = require("../websocket/websocket.module.js");
+const customers_module_js_1 = require("../customers/customers.module.js");
 let OrdersModule = class OrdersModule {
 };
 exports.OrdersModule = OrdersModule;
@@ -27,6 +28,7 @@ exports.OrdersModule = OrdersModule = __decorate([
             (0, common_1.forwardRef)(() => websocket_module_js_1.WebSocketModule),
             users_module_js_1.UsersModule,
             module_config_module_js_1.ModuleConfigModule,
+            customers_module_js_1.CustomersModule,
         ],
         controllers: [orders_controller_js_1.OrdersController],
         providers: [orders_service_js_1.OrdersService],

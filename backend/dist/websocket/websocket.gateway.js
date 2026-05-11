@@ -100,7 +100,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AppWebSocketGateway.prototype, "handleOrderStatus", null);
 exports.AppWebSocketGateway = AppWebSocketGateway = AppWebSocketGateway_1 = __decorate([
-    (0, websockets_1.WebSocketGateway)({ cors: { origin: process.env.FRONTEND_URL } }),
+    (0, websockets_1.WebSocketGateway)({
+        cors: {
+            origin: [
+                'http://localhost:3000',
+                'http://localhost:3002',
+                ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+            ],
+            credentials: true,
+        },
+    }),
     __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => orders_service_js_1.OrdersService))),
     __metadata("design:paramtypes", [jwt_1.JwtService,
         config_1.ConfigService,

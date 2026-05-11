@@ -17,7 +17,7 @@ export declare class AppWebSocketGateway implements OnGatewayConnection {
     handleItemStatus(data: {
         orderId: string;
         itemId: string;
-        status: 'pending' | 'preparing' | 'ready';
+        status: 'pending' | 'preparing' | 'ready' | 'delivered';
     }): Promise<void>;
     handleOrderStatus(data: {
         orderId: string;

@@ -36,7 +36,7 @@ export class OrderItem {
   notes: string | null;
 
   @Column({ default: 'pending' })
-  itemStatus: 'pending' | 'preparing' | 'ready';
+  itemStatus: 'pending' | 'preparing' | 'ready' | 'delivered';
 
   @OneToMany(() => OrderItemAccessory, (a) => a.orderItem, { cascade: true, eager: false })
   accessories: OrderItemAccessory[];

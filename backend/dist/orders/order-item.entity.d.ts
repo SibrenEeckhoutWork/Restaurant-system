@@ -9,6 +9,6 @@ export declare class OrderItem {
     product: Product;
     quantity: number;
     notes: string | null;
-    itemStatus: 'pending' | 'preparing' | 'ready';
+    itemStatus: 'pending' | 'preparing' | 'ready' | 'delivered';
     accessories: OrderItemAccessory[];
 }

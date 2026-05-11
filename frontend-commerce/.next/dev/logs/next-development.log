@@ -1,3 +1,4 @@
-{"timestamp":"00:00:02.327","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:03.853","source":"Server","level":"ERROR","message":"TypeError: fetch failed"}
-{"timestamp":"00:00:04.692","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:00:02.645","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:04.259","source":"Server","level":"ERROR","message":"TypeError: fetch failed"}
+{"timestamp":"00:00:05.068","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:00:37.939","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}

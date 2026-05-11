@@ -165,7 +165,7 @@ export function OrderDetailPanel({ order, onClose, onUpdated, onDeleted }: Props
         <div className="flex items-start justify-between px-5 py-4 border-b shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-base">{order.table.name}</h2>
+              <h2 className="font-semibold text-base">{order.table?.name ?? order.customerName ?? 'Online bestelling'}</h2>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[order.status]}`}>
                 {STATUS_LABELS[order.status]}
               </span>

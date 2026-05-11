@@ -8,6 +8,7 @@ import { OrdersController } from './orders.controller.js';
 import { UsersModule } from '../users/users.module.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
 import { WebSocketModule } from '../websocket/websocket.module.js';
+import { CustomersModule } from '../customers/customers.module.js';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { WebSocketModule } from '../websocket/websocket.module.js';
     forwardRef(() => WebSocketModule),
     UsersModule,
     ModuleConfigModule,
+    CustomersModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

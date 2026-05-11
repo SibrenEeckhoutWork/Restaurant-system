@@ -11,7 +11,7 @@ export interface OrderItemAccessory {
   quantity: number;
 }
 
-export type ItemStatus = 'pending' | 'preparing' | 'ready';
+export type ItemStatus = 'pending' | 'preparing' | 'ready' | 'delivered';
 
 export interface OrderItem {
   id: string;
@@ -26,8 +26,14 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  tableId: string;
-  table: Table;
+  tableId: string | null;
+  table: Table | null;
+  customerName: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  deliveryType: 'delivery' | 'pickup' | null;
+  customerId: string | null;
   status: OrderStatus;
   items: OrderItem[];
   createdAt: string;

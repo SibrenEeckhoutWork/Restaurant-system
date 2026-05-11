@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SiteNav from '@/components/marketing/SiteNav';
 import RevealSection from '@/components/marketing/RevealSection';
+import BoxOrderSection from '@/components/marketing/BoxOrderSection';
 
 export const metadata: Metadata = {
   title: 'Ontbijtbox — De Zoete Wever',
@@ -30,9 +31,6 @@ async function getBoxes(): Promise<BoxProduct[]> {
   }
 }
 
-function formatPrice(price: number) {
-  return `€ ${Number(price).toFixed(2).replace('.', ',')}`;
-}
 
 export default async function BestellenPage() {
   const boxes = await getBoxes();
@@ -73,31 +71,7 @@ export default async function BestellenPage() {
             <p className="lead" style={{ maxWidth: '38ch' }}>Alle boxen worden &apos;s ochtends vers verpakt. Eet binnen de dag — zoals het hoort.</p>
           </div>
 
-          <div className="boxes">
-            {boxes.map((box, idx) => (
-              <article key={box.id} className="box-card">
-                {idx === 1 && <div className="box-card__ribbon">Meest gekozen</div>}
-                <div className="box-card__photo">
-                  <div className="ph"><span>{box.name}</span></div>
-                </div>
-                <div className="box-card__body">
-                  <div className="box-card__head">
-                    <h3>{box.name}</h3>
-                    <span className="box-card__price">{formatPrice(box.price)} p.p.</span>
-                  </div>
-                  {box.description && <span className="box-card__feeds">{box.description}</span>}
-                  {box.accessories.length > 0 && (
-                    <ul>
-                      {box.accessories.map((a) => <li key={a.id}>{a.name}</li>)}
-                    </ul>
-                  )}
-                  <a className={`btn ${idx === 1 ? 'btn--jam' : 'btn--ghost'}`} href="#bestelformulier">
-                    Kies deze <span className="arrow">→</span>
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
+          <BoxOrderSection boxes={boxes} />
         </RevealSection>
 
         <RevealSection className="section bleed-cream-2" id="hoe">

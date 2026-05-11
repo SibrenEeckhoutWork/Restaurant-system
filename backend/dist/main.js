@@ -12,8 +12,18 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
     app.use((0, cookie_parser_1.default)());
+    const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3002',
+        ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    ];
     app.enableCors({
-        origin: process.env.FRONTEND_URL,
+        origin: (origin, cb) => {
+            if (!origin || allowedOrigins.includes(origin))
+                cb(null, true);
+            else
+                cb(new Error(`CORS blocked: ${origin}`));
+        },
         credentials: true,
     });
     const swaggerConfig = new swagger_1.DocumentBuilder()

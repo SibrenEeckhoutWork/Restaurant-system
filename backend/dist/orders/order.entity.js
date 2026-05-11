@@ -25,6 +25,12 @@ let Order = class Order {
     id;
     tableId;
     table;
+    customerName;
+    email;
+    phone;
+    address;
+    deliveryType;
+    customerId;
     status;
     items;
     createdAt;
@@ -36,14 +42,38 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ nullable: true, type: 'uuid' }),
+    __metadata("design:type", Object)
 ], Order.prototype, "tableId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => table_entity_js_1.Table, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)(() => table_entity_js_1.Table, { nullable: true, onDelete: 'SET NULL' }),
     (0, typeorm_1.JoinColumn)({ name: 'tableId' }),
-    __metadata("design:type", table_entity_js_1.Table)
+    __metadata("design:type", Object)
 ], Order.prototype, "table", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
+    __metadata("design:type", Object)
+], Order.prototype, "customerName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
+    __metadata("design:type", Object)
+], Order.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
+    __metadata("design:type", Object)
+], Order.prototype, "phone", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
+    __metadata("design:type", Object)
+], Order.prototype, "address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'varchar', length: 20 }),
+    __metadata("design:type", Object)
+], Order.prototype, "deliveryType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, type: 'uuid' }),
+    __metadata("design:type", Object)
+], Order.prototype, "customerId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING }),
     __metadata("design:type", String)

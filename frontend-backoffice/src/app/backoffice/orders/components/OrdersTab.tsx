@@ -172,10 +172,10 @@ export function OrdersTab() {
                       <Checkbox
                         checked={selected.has(order.id)}
                         onCheckedChange={(v) => handleSelect(order.id, !!v)}
-                        aria-label={`Selecteer bestelling ${order.table.name}`}
+                        aria-label={`Selecteer bestelling ${order.table?.name ?? order.customerName ?? 'Online'}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{order.table.name}</TableCell>
+                    <TableCell className="font-medium">{order.table?.name ?? order.customerName ?? 'Online'}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {totalQty} item{totalQty !== 1 ? 's' : ''}
                     </TableCell>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,10 +16,9 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!isLoading && user) {
-    router.replace('/backoffice');
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoading && user) router.replace('/backoffice');
+  }, [isLoading, user, router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
