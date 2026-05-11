@@ -19,8 +19,6 @@ import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { CreateAllergyDto } from './dto/create-allergy.dto.js';
 import { UpdateAllergyDto } from './dto/update-allergy.dto.js';
-import { CreateAccessoryDto } from './dto/create-accessory.dto.js';
-import { UpdateAccessoryDto } from './dto/update-accessory.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
@@ -96,41 +94,6 @@ export class AllergiesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('allergies.delete')
   remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.removeAllergy(id); }
-}
-
-// ── Accessories ───────────────────────────────────────────────────────────────
-@ApiTags('Accessories')
-@Controller('accessories')
-export class AccessoriesController {
-  constructor(private readonly service: ProductsService) {}
-
-  @Get()
-  @RequirePermission('accessories.get')
-  findAll() { return this.service.findAllAccessories(); }
-
-  @Get(':id')
-  @RequirePermission('accessories.get')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findAccessoryById(id); }
-
-  @Post()
-  @RequirePermission('accessories.create')
-  create(@Body() dto: CreateAccessoryDto) { return this.service.createAccessory(dto); }
-
-  @Patch(':id')
-  @RequirePermission('accessories.update')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAccessoryDto) {
-    return this.service.updateAccessory(id, dto);
-  }
-
-  @Delete('bulk')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @RequirePermission('accessories.delete')
-  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveAccessories(body.ids); }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @RequirePermission('accessories.delete')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.removeAccessory(id); }
 }
 
 // ── Products ──────────────────────────────────────────────────────────────────

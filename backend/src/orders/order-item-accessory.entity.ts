@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderItem } from './order-item.entity.js';
-import { Accessory } from '../products/accessory.entity.js';
+import { Product } from '../products/product.entity.js';
 
 @Entity('order_item_accessories')
 export class OrderItemAccessory {
@@ -17,9 +17,9 @@ export class OrderItemAccessory {
   @Column()
   accessoryId: string;
 
-  @ManyToOne(() => Accessory, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'accessoryId' })
-  accessory: Accessory;
+  accessory: Product;
 
   @Column('int')
   quantity: number;

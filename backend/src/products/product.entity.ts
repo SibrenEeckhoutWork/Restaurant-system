@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { Category } from './category.entity.js';
 import { Allergy } from './allergy.entity.js';
-import { Accessory } from './accessory.entity.js';
 
 const decimalTransformer = {
   from: (v: string | null) => (v === null ? null : parseFloat(v)),
@@ -44,7 +43,11 @@ export class Product {
   @JoinTable({ name: 'product_allergies_link' })
   allergies: Allergy[];
 
-  @ManyToMany(() => Accessory, { eager: false })
-  @JoinTable({ name: 'product_accessories_link' })
-  accessories: Accessory[];
+  @ManyToMany(() => Product, { eager: false })
+  @JoinTable({
+    name: 'product_accessories_link',
+    joinColumn: { name: 'productId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'accessoryProductId', referencedColumnName: 'id' },
+  })
+  accessories: Product[];
 }

@@ -1,18 +1,15 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Product } from './product.entity.js';
 import { Category } from './category.entity.js';
 import { Allergy } from './allergy.entity.js';
-import { Accessory } from './accessory.entity.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { CreateAllergyDto } from './dto/create-allergy.dto.js';
 import { UpdateAllergyDto } from './dto/update-allergy.dto.js';
-import { CreateAccessoryDto } from './dto/create-accessory.dto.js';
-import { UpdateAccessoryDto } from './dto/update-accessory.dto.js';
 
 @Injectable()
 export class ProductsService {
@@ -20,10 +17,9 @@ export class ProductsService {
     @InjectRepository(Product) private readonly productRepo: Repository<Product>,
     @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
     @InjectRepository(Allergy) private readonly allergyRepo: Repository<Allergy>,
-    @InjectRepository(Accessory) private readonly accessoryRepo: Repository<Accessory>,
   ) {}
 
-  // â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Categories ────────────────────────────────────────────────────────────────
 
   findAllCategories(): Promise<Category[]> {
     return this.categoryRepo.find({ order: { sortOrder: 'ASC', name: 'ASC' } });
@@ -54,7 +50,7 @@ export class ProductsService {
     await this.categoryRepo.delete(ids);
   }
 
-  // â”€â”€ Allergies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Allergies ─────────────────────────────────────────────────────────────────
 
   findAllAllergies(): Promise<Allergy[]> {
     return this.allergyRepo.find({ order: { name: 'ASC' } });
@@ -85,38 +81,7 @@ export class ProductsService {
     await this.allergyRepo.delete(ids);
   }
 
-  // â”€â”€ Accessories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-  findAllAccessories(): Promise<Accessory[]> {
-    return this.accessoryRepo.find({ order: { name: 'ASC' } });
-  }
-
-  async findAccessoryById(id: string): Promise<Accessory> {
-    const a = await this.accessoryRepo.findOne({ where: { id } });
-    if (!a) throw new NotFoundException('Accessory not found');
-    return a;
-  }
-
-  createAccessory(dto: CreateAccessoryDto): Promise<Accessory> {
-    return this.accessoryRepo.save(this.accessoryRepo.create(dto));
-  }
-
-  async updateAccessory(id: string, dto: UpdateAccessoryDto): Promise<Accessory> {
-    const a = await this.findAccessoryById(id);
-    Object.assign(a, dto);
-    return this.accessoryRepo.save(a);
-  }
-
-  async removeAccessory(id: string): Promise<void> {
-    const a = await this.findAccessoryById(id);
-    await this.accessoryRepo.remove(a);
-  }
-
-  async bulkRemoveAccessories(ids: string[]): Promise<void> {
-    await this.accessoryRepo.delete(ids);
-  }
-
-  // â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Products ──────────────────────────────────────────────────────────────────
 
   findAllProducts(): Promise<Product[]> {
     return this.productRepo.find({
@@ -139,7 +104,7 @@ export class ProductsService {
       ? await this.allergyRepo.findBy({ id: In(dto.allergyIds) })
       : [];
     const accessories = dto.accessoryIds?.length
-      ? await this.accessoryRepo.findBy({ id: In(dto.accessoryIds) })
+      ? await this.productRepo.findBy({ id: In(dto.accessoryIds) })
       : [];
 
     const product = this.productRepo.create({
@@ -169,7 +134,7 @@ export class ProductsService {
     }
     if (dto.accessoryIds !== undefined) {
       product.accessories = dto.accessoryIds.length
-        ? await this.accessoryRepo.findBy({ id: In(dto.accessoryIds) })
+        ? await this.productRepo.findBy({ id: In(dto.accessoryIds) })
         : [];
     }
 
@@ -185,4 +150,3 @@ export class ProductsService {
     await this.productRepo.delete(ids);
   }
 }
-

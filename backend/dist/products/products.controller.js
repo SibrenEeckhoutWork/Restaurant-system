@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductsController = exports.AccessoriesController = exports.AllergiesController = exports.CategoriesController = void 0;
+exports.ProductsController = exports.AllergiesController = exports.CategoriesController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const products_service_js_1 = require("./products.service.js");
@@ -22,8 +22,6 @@ const create_category_dto_js_1 = require("./dto/create-category.dto.js");
 const update_category_dto_js_1 = require("./dto/update-category.dto.js");
 const create_allergy_dto_js_1 = require("./dto/create-allergy.dto.js");
 const update_allergy_dto_js_1 = require("./dto/update-allergy.dto.js");
-const create_accessory_dto_js_1 = require("./dto/create-accessory.dto.js");
-const update_accessory_dto_js_1 = require("./dto/update-accessory.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
@@ -169,76 +167,6 @@ exports.AllergiesController = AllergiesController = __decorate([
     (0, common_1.Controller)('allergies'),
     __metadata("design:paramtypes", [products_service_js_1.ProductsService])
 ], AllergiesController);
-let AccessoriesController = class AccessoriesController {
-    service;
-    constructor(service) {
-        this.service = service;
-    }
-    findAll() { return this.service.findAllAccessories(); }
-    findOne(id) { return this.service.findAccessoryById(id); }
-    create(dto) { return this.service.createAccessory(dto); }
-    update(id, dto) {
-        return this.service.updateAccessory(id, dto);
-    }
-    bulkDelete(body) { return this.service.bulkRemoveAccessories(body.ids); }
-    remove(id) { return this.service.removeAccessory(id); }
-};
-exports.AccessoriesController = AccessoriesController;
-__decorate([
-    (0, common_1.Get)(),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.get'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "findAll", null);
-__decorate([
-    (0, common_1.Get)(':id'),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.get'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Post)(),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.create'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_accessory_dto_js_1.CreateAccessoryDto]),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "create", null);
-__decorate([
-    (0, common_1.Patch)(':id'),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.update'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_accessory_dto_js_1.UpdateAccessoryDto]),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "update", null);
-__decorate([
-    (0, common_1.Delete)('bulk'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.delete'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "bulkDelete", null);
-__decorate([
-    (0, common_1.Delete)(':id'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
-    (0, require_permission_decorator_js_1.RequirePermission)('accessories.delete'),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], AccessoriesController.prototype, "remove", null);
-exports.AccessoriesController = AccessoriesController = __decorate([
-    (0, swagger_1.ApiTags)('Accessories'),
-    (0, common_1.Controller)('accessories'),
-    __metadata("design:paramtypes", [products_service_js_1.ProductsService])
-], AccessoriesController);
 let ProductsController = class ProductsController {
     service;
     constructor(service) {

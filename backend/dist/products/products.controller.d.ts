@@ -5,8 +5,6 @@ import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { CreateAllergyDto } from './dto/create-allergy.dto.js';
 import { UpdateAllergyDto } from './dto/update-allergy.dto.js';
-import { CreateAccessoryDto } from './dto/create-accessory.dto.js';
-import { UpdateAccessoryDto } from './dto/update-accessory.dto.js';
 export declare class CategoriesController {
     private readonly service;
     constructor(service: ProductsService);
@@ -26,18 +24,6 @@ export declare class AllergiesController {
     findOne(id: string): Promise<import("./allergy.entity.js").Allergy>;
     create(dto: CreateAllergyDto): Promise<import("./allergy.entity.js").Allergy>;
     update(id: string, dto: UpdateAllergyDto): Promise<import("./allergy.entity.js").Allergy>;
-    bulkDelete(body: {
-        ids: string[];
-    }): Promise<void>;
-    remove(id: string): Promise<void>;
-}
-export declare class AccessoriesController {
-    private readonly service;
-    constructor(service: ProductsService);
-    findAll(): Promise<import("./accessory.entity.js").Accessory[]>;
-    findOne(id: string): Promise<import("./accessory.entity.js").Accessory>;
-    create(dto: CreateAccessoryDto): Promise<import("./accessory.entity.js").Accessory>;
-    update(id: string, dto: UpdateAccessoryDto): Promise<import("./accessory.entity.js").Accessory>;
     bulkDelete(body: {
         ids: string[];
     }): Promise<void>;

@@ -1,15 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, X, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 import { productsService, type Product } from '@/services/products.service';
 import { ProductPanel } from './ProductPanel';
 
@@ -44,6 +43,7 @@ export function ProductsTab() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [panel, setPanel] = useState<{ mode: 'create' | 'edit'; product: Product | null } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -51,8 +51,11 @@ export function ProductsTab() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setProducts(await productsService.getAll()); }
-    finally { setLoading(false); }
+    try {
+      const prods = await productsService.getAll();
+      setProducts(prods);
+      setOpenCategories(new Set(prods.map((p) => p.categoryId ?? '__none__')));
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -102,8 +105,25 @@ export function ProductsTab() {
     await load();
   };
 
+  const toggleCategory = (id: string) => {
+    setOpenCategories((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   const allSelected = products.length > 0 && products.every((p) => selected.has(p.id));
   const someSelected = products.some((p) => selected.has(p.id)) && !allSelected;
+
+  const grouped = products.reduce((acc, p) => {
+    const key = p.categoryId ?? '__none__';
+    if (!acc[key]) acc[key] = { id: key, name: p.category?.name ?? 'Geen categorie', products: [] };
+    acc[key].products.push(p);
+    return acc;
+  }, {} as Record<string, { id: string; name: string; products: Product[] }>);
+
+  const categories = Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <>
@@ -118,114 +138,156 @@ export function ProductsTab() {
           </Button>
         </div>
 
-        <div className="rounded-lg border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  <Checkbox
-                    checked={allSelected}
-                    indeterminate={someSelected}
-                    onCheckedChange={(v) => handleSelectAll(!!v)}
-                    aria-label="Alles selecteren"
-                  />
-                </TableHead>
-                <TableHead>Naam</TableHead>
-                <TableHead>Categorie</TableHead>
-                <TableHead>Prijs</TableHead>
-                <TableHead>Allergenen</TableHead>
-                <TableHead>Extra&apos;s</TableHead>
-                <TableHead>Beschikbaar</TableHead>
-                <TableHead className="w-20 text-right">Acties</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {[1,2,3,4,5,6,7,8].map((j) => <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>)}
-                  </TableRow>
-                ))
-              ) : products.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-10 text-sm">
-                    Geen producten gevonden.
-                  </TableCell>
-                </TableRow>
-              ) : products.map((p) => (
-                <TableRow key={p.id} className="cursor-pointer" onClick={() => setPanel({ mode: 'edit', product: p })}>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={selected.has(p.id)}
-                      onCheckedChange={(v) => handleSelect(p.id, !!v)}
-                      aria-label={`Selecteer ${p.name}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <span className="font-medium">{p.name}</span>
-                      {p.description && (
-                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">{p.description}</div>
-                      )}
+        {loading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="rounded-lg border px-4 py-10 text-center text-sm text-muted-foreground">
+            Geen producten gevonden.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                onCheckedChange={(v) => handleSelectAll(!!v)}
+                aria-label="Alles selecteren"
+              />
+              <span className="text-xs text-muted-foreground">Alles selecteren</span>
+            </div>
+
+            {categories.map(({ id: catId, name: catName, products: catProducts }) => {
+              const isOpen = openCategories.has(catId);
+              const allCatSelected = catProducts.every((p) => selected.has(p.id));
+              const someCatSelected = catProducts.some((p) => selected.has(p.id)) && !allCatSelected;
+
+              return (
+                <Collapsible key={catId} open={isOpen} onOpenChange={() => toggleCategory(catId)}>
+                  <div className="rounded-lg border overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-muted/20">
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={allCatSelected}
+                          indeterminate={someCatSelected}
+                          onCheckedChange={(v) => {
+                            setSelected((prev) => {
+                              const next = new Set(prev);
+                              catProducts.forEach((p) => v ? next.add(p.id) : next.delete(p.id));
+                              return next;
+                            });
+                          }}
+                          aria-label={`Selecteer alle ${catName}`}
+                        />
+                      </div>
+                      <CollapsibleTrigger className="flex items-center gap-2 flex-1 text-left">
+                        <ChevronRight
+                          className={cn(
+                            'size-4 text-muted-foreground transition-transform duration-200 shrink-0',
+                            isOpen && 'rotate-90',
+                          )}
+                        />
+                        <span className="font-medium text-sm">{catName}</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {catProducts.length}
+                        </Badge>
+                      </CollapsibleTrigger>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{p.category?.name ?? '—'}</Badge>
-                  </TableCell>
-                  <TableCell className="font-medium">€{Number(p.price).toFixed(2)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-0.5 flex-wrap max-w-[180px]">
-                      {(p.allergies ?? []).length === 0 ? (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      ) : (
-                        (p.allergies ?? []).map((a) => (
-                          <span key={a.id} title={a.name} className="text-lg leading-none">
-                            {a.icon ?? a.name.charAt(0)}
-                          </span>
-                        ))
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1 max-w-[200px]">
-                      {(p.accessories ?? []).length === 0 ? (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      ) : (
-                        (p.accessories ?? []).map((a) => (
-                          <span key={a.id} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-                            {a.name}
-                          </span>
-                        ))
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    {toggling === p.id ? (
-                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                    ) : (
-                      <Switch checked={p.isAvailable} onCheckedChange={() => handleToggleAvailable(p)} />
-                    )}
-                  </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => setPanel({ mode: 'edit', product: p })}>
-                        <Pencil className="size-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost" size="icon-sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(p)}
-                        disabled={deleting === p.id}
-                      >
-                        {deleting === p.id ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+
+                    <CollapsibleContent>
+                      <div className="divide-y">
+                        {catProducts.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 cursor-pointer"
+                            onClick={() => setPanel({ mode: 'edit', product: p })}
+                          >
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selected.has(p.id)}
+                                onCheckedChange={(v) => handleSelect(p.id, !!v)}
+                                aria-label={`Selecteer ${p.name}`}
+                              />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm">{p.name}</span>
+                                {p.description && (
+                                  <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                    {p.description}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs font-medium text-foreground">
+                                  €{Number(p.price).toFixed(2)}
+                                </span>
+                                {(p.allergies ?? []).length > 0 && (
+                                  <span className="flex gap-0.5">
+                                    {p.allergies.map((a) => (
+                                      <span key={a.id} title={a.name} className="text-sm leading-none">
+                                        {a.icon ?? a.name.charAt(0)}
+                                      </span>
+                                    ))}
+                                  </span>
+                                )}
+                                {(p.accessories ?? []).length > 0 && (
+                                  <div className="flex gap-1 flex-wrap">
+                                    {p.accessories.slice(0, 3).map((a) => (
+                                      <span key={a.id} className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                                        {a.name}
+                                      </span>
+                                    ))}
+                                    {p.accessories.length > 3 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        +{p.accessories.length - 3}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              {toggling === p.id ? (
+                                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                              ) : (
+                                <Switch
+                                  checked={p.isAvailable}
+                                  onCheckedChange={() => handleToggleAvailable(p)}
+                                />
+                              )}
+                              <Button
+                                variant="ghost" size="icon-sm"
+                                onClick={() => setPanel({ mode: 'edit', product: p })}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost" size="icon-sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleDelete(p)}
+                                disabled={deleting === p.id}
+                              >
+                                {deleting === p.id
+                                  ? <Loader2 className="size-3.5 animate-spin" />
+                                  : <Trash2 className="size-3.5" />}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </div>
+                </Collapsible>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <ProductPanel

@@ -13,7 +13,6 @@ exports.Product = void 0;
 const typeorm_1 = require("typeorm");
 const category_entity_js_1 = require("./category.entity.js");
 const allergy_entity_js_1 = require("./allergy.entity.js");
-const accessory_entity_js_1 = require("./accessory.entity.js");
 const decimalTransformer = {
     from: (v) => (v === null ? null : parseFloat(v)),
     to: (v) => v,
@@ -65,8 +64,12 @@ __decorate([
     __metadata("design:type", Array)
 ], Product.prototype, "allergies", void 0);
 __decorate([
-    (0, typeorm_1.ManyToMany)(() => accessory_entity_js_1.Accessory, { eager: false }),
-    (0, typeorm_1.JoinTable)({ name: 'product_accessories_link' }),
+    (0, typeorm_1.ManyToMany)(() => Product, { eager: false }),
+    (0, typeorm_1.JoinTable)({
+        name: 'product_accessories_link',
+        joinColumn: { name: 'productId', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'accessoryProductId', referencedColumnName: 'id' },
+    }),
     __metadata("design:type", Array)
 ], Product.prototype, "accessories", void 0);
 exports.Product = Product = __decorate([

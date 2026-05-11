@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderItemAccessory = void 0;
 const typeorm_1 = require("typeorm");
 const order_item_entity_js_1 = require("./order-item.entity.js");
-const accessory_entity_js_1 = require("../products/accessory.entity.js");
+const product_entity_js_1 = require("../products/product.entity.js");
 let OrderItemAccessory = class OrderItemAccessory {
     id;
     orderItemId;
@@ -40,9 +40,9 @@ __decorate([
     __metadata("design:type", String)
 ], OrderItemAccessory.prototype, "accessoryId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => accessory_entity_js_1.Accessory, { onDelete: 'CASCADE' }),
+    (0, typeorm_1.ManyToOne)(() => product_entity_js_1.Product, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'accessoryId' }),
-    __metadata("design:type", accessory_entity_js_1.Accessory)
+    __metadata("design:type", product_entity_js_1.Product)
 ], OrderItemAccessory.prototype, "accessory", void 0);
 __decorate([
     (0, typeorm_1.Column)('int'),

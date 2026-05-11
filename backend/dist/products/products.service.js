@@ -19,17 +19,14 @@ const typeorm_2 = require("typeorm");
 const product_entity_js_1 = require("./product.entity.js");
 const category_entity_js_1 = require("./category.entity.js");
 const allergy_entity_js_1 = require("./allergy.entity.js");
-const accessory_entity_js_1 = require("./accessory.entity.js");
 let ProductsService = class ProductsService {
     productRepo;
     categoryRepo;
     allergyRepo;
-    accessoryRepo;
-    constructor(productRepo, categoryRepo, allergyRepo, accessoryRepo) {
+    constructor(productRepo, categoryRepo, allergyRepo) {
         this.productRepo = productRepo;
         this.categoryRepo = categoryRepo;
         this.allergyRepo = allergyRepo;
-        this.accessoryRepo = accessoryRepo;
     }
     findAllCategories() {
         return this.categoryRepo.find({ order: { sortOrder: 'ASC', name: 'ASC' } });
@@ -79,30 +76,6 @@ let ProductsService = class ProductsService {
     async bulkRemoveAllergies(ids) {
         await this.allergyRepo.delete(ids);
     }
-    findAllAccessories() {
-        return this.accessoryRepo.find({ order: { name: 'ASC' } });
-    }
-    async findAccessoryById(id) {
-        const a = await this.accessoryRepo.findOne({ where: { id } });
-        if (!a)
-            throw new common_1.NotFoundException('Accessory not found');
-        return a;
-    }
-    createAccessory(dto) {
-        return this.accessoryRepo.save(this.accessoryRepo.create(dto));
-    }
-    async updateAccessory(id, dto) {
-        const a = await this.findAccessoryById(id);
-        Object.assign(a, dto);
-        return this.accessoryRepo.save(a);
-    }
-    async removeAccessory(id) {
-        const a = await this.findAccessoryById(id);
-        await this.accessoryRepo.remove(a);
-    }
-    async bulkRemoveAccessories(ids) {
-        await this.accessoryRepo.delete(ids);
-    }
     findAllProducts() {
         return this.productRepo.find({
             relations: { category: true, allergies: true, accessories: true },
@@ -123,7 +96,7 @@ let ProductsService = class ProductsService {
             ? await this.allergyRepo.findBy({ id: (0, typeorm_2.In)(dto.allergyIds) })
             : [];
         const accessories = dto.accessoryIds?.length
-            ? await this.accessoryRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
+            ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
             : [];
         const product = this.productRepo.create({
             name: dto.name,
@@ -155,7 +128,7 @@ let ProductsService = class ProductsService {
         }
         if (dto.accessoryIds !== undefined) {
             product.accessories = dto.accessoryIds.length
-                ? await this.accessoryRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
+                ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
                 : [];
         }
         return this.productRepo.save(product);
@@ -174,9 +147,7 @@ exports.ProductsService = ProductsService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(product_entity_js_1.Product)),
     __param(1, (0, typeorm_1.InjectRepository)(category_entity_js_1.Category)),
     __param(2, (0, typeorm_1.InjectRepository)(allergy_entity_js_1.Allergy)),
-    __param(3, (0, typeorm_1.InjectRepository)(accessory_entity_js_1.Accessory)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])
 ], ProductsService);

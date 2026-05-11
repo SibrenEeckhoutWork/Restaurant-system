@@ -33,15 +33,6 @@ const GROUPS = [
       { key: 'allergies.delete', label: 'Verwijderen', description: 'Allergeen verwijderen — DELETE /allergies/:id', color: 'text-red-700 dark:text-red-400' },
     ],
   },
-  {
-    label: "Extra's",
-    permissions: [
-      { key: 'accessories.get', label: 'Bekijken', description: "Extra's oplijsten — GET /accessories", color: 'text-blue-700 dark:text-blue-400' },
-      { key: 'accessories.create', label: 'Aanmaken', description: "Nieuw extra — POST /accessories", color: 'text-green-700 dark:text-green-400' },
-      { key: 'accessories.update', label: 'Bewerken', description: "Extra bewerken — PATCH /accessories/:id", color: 'text-yellow-700 dark:text-yellow-400' },
-      { key: 'accessories.delete', label: 'Verwijderen', description: "Extra verwijderen — DELETE /accessories/:id", color: 'text-red-700 dark:text-red-400' },
-    ],
-  },
 ];
 
 export function ConfigTab() {

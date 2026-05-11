@@ -12,12 +12,6 @@ export interface Allergy {
   icon: string | null;
 }
 
-export interface Accessory {
-  id: string;
-  name: string;
-  price: number;
-}
-
 export interface Product {
   id: string;
   name: string;
@@ -27,7 +21,7 @@ export interface Product {
   categoryId: string;
   category: Category;
   allergies: Allergy[];
-  accessories: Accessory[];
+  accessories: { id: string; name: string; price: number }[];
 }
 
 export const categoriesService = {
@@ -45,14 +39,6 @@ export const allergiesService = {
   update: (id: string, data: { name?: string; icon?: string }) => apiService.patch<Allergy>(`/allergies/${id}`, data),
   remove: (id: string) => apiService.delete<void>(`/allergies/${id}`),
   bulkRemove: (ids: string[]) => apiService.deleteWithBody<void>('/allergies/bulk', { ids }),
-};
-
-export const accessoriesService = {
-  getAll: () => apiService.get<Accessory[]>('/accessories'),
-  create: (data: { name: string; price: number }) => apiService.post<Accessory>('/accessories', data),
-  update: (id: string, data: { name?: string; price?: number }) => apiService.patch<Accessory>(`/accessories/${id}`, data),
-  remove: (id: string) => apiService.delete<void>(`/accessories/${id}`),
-  bulkRemove: (ids: string[]) => apiService.deleteWithBody<void>('/accessories/bulk', { ids }),
 };
 
 export const productsService = {

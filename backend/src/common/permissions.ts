@@ -9,7 +9,6 @@ export const ALL_PERMISSIONS = [
   'products.get', 'products.create', 'products.update', 'products.delete',
   'categories.get', 'categories.create', 'categories.update', 'categories.delete',
   'allergies.get', 'allergies.create', 'allergies.update', 'allergies.delete',
-  'accessories.get', 'accessories.create', 'accessories.update', 'accessories.delete',
   'permissions.manage',
 ];
 

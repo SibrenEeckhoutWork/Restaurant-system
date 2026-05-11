@@ -1,20 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   productsService,
   categoriesService,
   allergiesService,
-  accessoriesService,
   type Product,
   type Category,
   type Allergy,
-  type Accessory,
 } from '@/services/products.service';
 
 interface Props {
@@ -68,11 +69,98 @@ function CheckGroup<T extends { id: string; name: string }>({
   );
 }
 
+function AccessoriesMultiSelect({
+  allProducts,
+  currentProductId,
+  selected,
+  onChange,
+}: {
+  allProducts: Product[];
+  currentProductId: string | null;
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const toggle = (id: string) => {
+    onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  };
+
+  const selectable = allProducts.filter((p) => p.id !== currentProductId);
+
+  const grouped = selectable.reduce((acc, p) => {
+    const key = p.categoryId ?? '__none__';
+    if (!acc[key]) acc[key] = { name: p.category?.name ?? 'Geen categorie', products: [] };
+    acc[key].products.push(p);
+    return acc;
+  }, {} as Record<string, { name: string; products: Product[] }>);
+
+  const categories = Object.entries(grouped).sort(([, a], [, b]) => a.name.localeCompare(b.name));
+  const selectedProducts = allProducts.filter((p) => selected.includes(p.id));
+
+  return (
+    <Popover>
+      <PopoverTrigger className="w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm min-h-9 hover:bg-accent/30 transition-colors">
+        <div className="flex flex-wrap gap-1 flex-1 min-w-0 text-left">
+          {selectedProducts.length === 0 ? (
+            <span className="text-muted-foreground">Selecteer producten...</span>
+          ) : (
+            <>
+              {selectedProducts.slice(0, 3).map((p) => (
+                <Badge key={p.id} variant="secondary" className="text-xs font-normal">
+                  {p.name}
+                </Badge>
+              ))}
+              {selectedProducts.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{selectedProducts.length - 3}
+                </Badge>
+              )}
+            </>
+          )}
+        </div>
+        <ChevronsUpDown className="size-4 shrink-0 opacity-50 ml-2" />
+      </PopoverTrigger>
+      <PopoverContent className="w-[380px] p-1" side="bottom" align="start">
+        <div className="max-h-64 overflow-y-auto">
+          {selectable.length === 0 ? (
+            <p className="px-2 py-3 text-sm text-muted-foreground text-center">Geen andere producten.</p>
+          ) : (
+            categories.map(([catId, { name, products }]) => (
+              <div key={catId}>
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  {name}
+                </div>
+                {products.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggle(p.id)}
+                    className="flex w-full items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors text-left"
+                  >
+                    <Checkbox
+                      checked={selected.includes(p.id)}
+                      onCheckedChange={() => toggle(p.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <span className="flex-1">{p.name}</span>
+                    <span className="text-muted-foreground text-xs shrink-0">
+                      €{Number(p.price).toFixed(2)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function ProductPanel({ mode, product, onClose, onSaved }: Props) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [categories, setCategories] = useState<Category[]>([]);
   const [allergies, setAllergies] = useState<Allergy[]>([]);
-  const [accessories, setAccessories] = useState<Accessory[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,11 +168,11 @@ export function ProductPanel({ mode, product, onClose, onSaved }: Props) {
     Promise.all([
       categoriesService.getAll(),
       allergiesService.getAll(),
-      accessoriesService.getAll(),
-    ]).then(([cats, algs, accs]) => {
+      productsService.getAll(),
+    ]).then(([cats, algs, prods]) => {
       setCategories(cats);
       setAllergies(algs);
-      setAccessories(accs);
+      setAllProducts(prods);
     });
   }, []);
 
@@ -108,7 +196,7 @@ export function ProductPanel({ mode, product, onClose, onSaved }: Props) {
   const set = <K extends keyof typeof EMPTY_FORM>(k: K, v: (typeof EMPTY_FORM)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const toggleId = (field: 'allergyIds' | 'accessoryIds', id: string) =>
+  const toggleId = (field: 'allergyIds', id: string) =>
     setForm((f) => {
       const arr = f[field];
       return { ...f, [field]: arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id] };
@@ -204,13 +292,15 @@ export function ProductPanel({ mode, product, onClose, onSaved }: Props) {
             renderLabel={(a) => <span>{a.icon ? `${a.icon} ` : ''}{a.name}</span>}
           />
 
-          <CheckGroup
-            label="Extra's"
-            items={accessories}
-            selected={form.accessoryIds}
-            onToggle={(id) => toggleId('accessoryIds', id)}
-            renderLabel={(a) => <span>{a.name} <span className="text-muted-foreground">+€{Number(a.price).toFixed(2)}</span></span>}
-          />
+          <div className="space-y-1.5">
+            <Label>Extra&apos;s (andere producten)</Label>
+            <AccessoriesMultiSelect
+              allProducts={allProducts}
+              currentProductId={product?.id ?? null}
+              selected={form.accessoryIds}
+              onChange={(ids) => set('accessoryIds', ids)}
+            />
+          </div>
         </div>
 
         <div className="px-6 py-4 border-t space-y-2">

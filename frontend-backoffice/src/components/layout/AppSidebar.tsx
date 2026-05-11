@@ -58,7 +58,6 @@ const PRODUCT_MANAGEMENT_LINKS = [
   { href: '/backoffice/products', label: 'Producten' },
   { href: '/backoffice/products/categories', label: 'Categorieën' },
   { href: '/backoffice/products/allergies', label: 'Allergenen' },
-  { href: '/backoffice/products/accessories', label: "Extra's" },
 ];
 
 const USER_MANAGEMENT_LINKS = [
