@@ -19,6 +19,7 @@ const reservations_service_js_1 = require("./reservations.service.js");
 const create_slot_dto_js_1 = require("./dto/create-slot.dto.js");
 const update_slot_dto_js_1 = require("./dto/update-slot.dto.js");
 const create_reservation_dto_js_1 = require("./dto/create-reservation.dto.js");
+const create_public_reservation_dto_js_1 = require("./dto/create-public-reservation.dto.js");
 const update_reservation_status_dto_js_1 = require("./dto/update-reservation-status.dto.js");
 const reservation_entity_js_1 = require("./reservation.entity.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
@@ -32,6 +33,9 @@ let ReservationsController = class ReservationsController {
     }
     getAvailability(date, partySize) {
         return this.service.getAvailability(date, partySize);
+    }
+    getAvailableDates(year, month, partySize) {
+        return this.service.getAvailableDatesForMonth(year, month, partySize);
     }
     findSlots(date) {
         return this.service.findSlots({ date });
@@ -57,6 +61,9 @@ let ReservationsController = class ReservationsController {
     updateStatus(id, dto) {
         return this.service.updateStatus(id, dto);
     }
+    createPublic(dto) {
+        return this.service.createPublicReservation(dto);
+    }
     createForCustomer(dto) {
         return this.service.createReservation(dto);
     }
@@ -76,6 +83,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Number]),
     __metadata("design:returntype", void 0)
 ], ReservationsController.prototype, "getAvailability", null);
+__decorate([
+    (0, common_1.Get)('available-dates'),
+    __param(0, (0, common_1.Query)('year', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)('month', common_1.ParseIntPipe)),
+    __param(2, (0, common_1.Query)('partySize', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number]),
+    __metadata("design:returntype", void 0)
+], ReservationsController.prototype, "getAvailableDates", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
@@ -162,6 +178,13 @@ __decorate([
     __metadata("design:paramtypes", [String, update_reservation_status_dto_js_1.UpdateReservationStatusDto]),
     __metadata("design:returntype", void 0)
 ], ReservationsController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Post)('public'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_public_reservation_dto_js_1.CreatePublicReservationDto]),
+    __metadata("design:returntype", void 0)
+], ReservationsController.prototype, "createPublic", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_customer_guard_js_1.JwtCustomerGuard),

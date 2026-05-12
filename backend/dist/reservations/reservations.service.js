@@ -113,6 +113,47 @@ let ReservationsService = class ReservationsService {
         const slot = await this.findSlotById(id);
         await this.slotRepo.remove(slot);
     }
+    async getAvailableDatesForMonth(year, month, partySize) {
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const today = new Date().toISOString().slice(0, 10);
+        const pad = (n) => String(n).padStart(2, '0');
+        const fromDate = `${year}-${pad(month)}-01`;
+        const toDate = `${year}-${pad(month)}-${pad(daysInMonth)}`;
+        const allSlots = await this.slotRepo.find({ where: { isActive: true } });
+        if (!allSlots.length)
+            return [];
+        const bookings = await this.reservationRepo
+            .createQueryBuilder('r')
+            .select('r.date', 'date')
+            .addSelect('r.slotId', 'slotId')
+            .addSelect('SUM(r.partySize)', 'booked')
+            .where('r.date >= :fromDate AND r.date <= :toDate', { fromDate, toDate })
+            .andWhere('r.status != :cancelled', { cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED })
+            .groupBy('r.date')
+            .addGroupBy('r.slotId')
+            .getRawMany();
+        const bookingMap = new Map();
+        for (const b of bookings) {
+            if (!bookingMap.has(b.date))
+                bookingMap.set(b.date, new Map());
+            bookingMap.get(b.date).set(b.slotId, parseInt(b.booked, 10));
+        }
+        const available = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+            const iso = `${year}-${pad(month)}-${pad(d)}`;
+            if (iso < today)
+                continue;
+            const matching = allSlots.filter((s) => this.slotMatchesDate(s, iso));
+            for (const slot of matching) {
+                const booked = bookingMap.get(iso)?.get(slot.id) ?? 0;
+                if (slot.maxCapacity - booked >= partySize) {
+                    available.push(iso);
+                    break;
+                }
+            }
+        }
+        return available;
+    }
     async getAvailability(date, partySize) {
         const slots = await this.findSlots({ date });
         return slots.filter((slot) => {
@@ -171,6 +212,44 @@ let ReservationsService = class ReservationsService {
             date: dto.date,
             slotId: dto.slotId,
             tableId: dto.tableId,
+            partySize: dto.partySize,
+            guestName: dto.guestName,
+            guestEmail: dto.guestEmail,
+            guestPhone: dto.guestPhone ?? null,
+            notes: dto.notes ?? null,
+            customerId: customer?.id ?? null,
+            status: reservation_entity_js_1.ReservationStatus.PENDING,
+        }));
+    }
+    async createPublicReservation(dto) {
+        const slot = await this.slotRepo.findOne({
+            where: { id: dto.slotId },
+            relations: { rooms: { tables: true } },
+        });
+        if (!slot)
+            throw new common_1.NotFoundException('Slot not found');
+        if (!slot.isActive)
+            throw new common_1.BadRequestException('Slot is not active');
+        const bookedRows = await this.reservationRepo
+            .createQueryBuilder('r')
+            .select('COALESCE(SUM(r.partySize), 0)', 'total')
+            .where('r.slotId = :slotId', { slotId: dto.slotId })
+            .andWhere('r.date = :date', { date: dto.date })
+            .andWhere('r.status != :cancelled', { cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED })
+            .getRawOne();
+        const booked = parseInt(bookedRows?.total ?? '0', 10);
+        if (booked + dto.partySize > slot.maxCapacity) {
+            throw new common_1.BadRequestException('Insufficient capacity for this slot on this date');
+        }
+        const tables = slot.rooms.flatMap((r) => r.tables);
+        if (!tables.length)
+            throw new common_1.BadRequestException('No tables configured for this slot');
+        const table = tables.find((t) => t.capacity >= dto.partySize) ?? tables[0];
+        const customer = await this.customerRepo.findOne({ where: { email: dto.guestEmail } });
+        return this.reservationRepo.save(this.reservationRepo.create({
+            date: dto.date,
+            slotId: dto.slotId,
+            tableId: table.id,
             partySize: dto.partySize,
             guestName: dto.guestName,
             guestEmail: dto.guestEmail,

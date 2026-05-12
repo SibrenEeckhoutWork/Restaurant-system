@@ -8,6 +8,7 @@ const links = [
   { href: '/', label: 'Thuis' },
   { href: '/kaart', label: 'Kaart' },
   { href: '/bestellen', label: 'Ontbijtbox' },
+  { href: '/reserveren', label: 'Reserveren' },
   { href: '/zaaltje', label: 'Zaaltje' },
   { href: '/galerij', label: 'Galerij' },
   { href: '/contact', label: 'Contact' },

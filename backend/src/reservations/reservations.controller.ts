@@ -18,6 +18,7 @@ import { ReservationsService } from './reservations.service.js';
 import { CreateSlotDto } from './dto/create-slot.dto.js';
 import { UpdateSlotDto } from './dto/update-slot.dto.js';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
+import { CreatePublicReservationDto } from './dto/create-public-reservation.dto.js';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto.js';
 import { ReservationStatus } from './reservation.entity.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
@@ -38,6 +39,15 @@ export class ReservationsController {
     @Query('partySize', ParseIntPipe) partySize: number,
   ) {
     return this.service.getAvailability(date, partySize);
+  }
+
+  @Get('available-dates')
+  getAvailableDates(
+    @Query('year', ParseIntPipe) year: number,
+    @Query('month', ParseIntPipe) month: number,
+    @Query('partySize', ParseIntPipe) partySize: number,
+  ) {
+    return this.service.getAvailableDatesForMonth(year, month, partySize);
   }
 
   // ── Slots (backoffice) ───────────────────────────────────────────────────
@@ -118,6 +128,13 @@ export class ReservationsController {
     @Body() dto: UpdateReservationStatusDto,
   ) {
     return this.service.updateStatus(id, dto);
+  }
+
+  // ── Public reservation (no auth) ──────────────────────────────────────────
+
+  @Post('public')
+  createPublic(@Body() dto: CreatePublicReservationDto) {
+    return this.service.createPublicReservation(dto);
   }
 
   // ── Customer routes ───────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { Customer } from '../customers/customer.entity.js';
 import { CreateSlotDto } from './dto/create-slot.dto.js';
 import { UpdateSlotDto } from './dto/update-slot.dto.js';
 import { CreateReservationDto } from './dto/create-reservation.dto.js';
+import { CreatePublicReservationDto } from './dto/create-public-reservation.dto.js';
 import { UpdateReservationStatusDto } from './dto/update-reservation-status.dto.js';
 export declare class ReservationsService {
     private readonly slotRepo;
@@ -22,6 +23,7 @@ export declare class ReservationsService {
     findSlotById(id: string): Promise<ReservationSlot>;
     updateSlot(id: string, dto: UpdateSlotDto): Promise<ReservationSlot>;
     removeSlot(id: string): Promise<void>;
+    getAvailableDatesForMonth(year: number, month: number, partySize: number): Promise<string[]>;
     getAvailability(date: string, partySize: number): Promise<ReservationSlot[]>;
     findAll(opts?: {
         date?: string;
@@ -31,6 +33,7 @@ export declare class ReservationsService {
     }): Promise<Reservation[]>;
     findById(id: string): Promise<Reservation>;
     createReservation(dto: CreateReservationDto): Promise<Reservation>;
+    createPublicReservation(dto: CreatePublicReservationDto): Promise<Reservation>;
     updateStatus(id: string, dto: UpdateReservationStatusDto): Promise<Reservation>;
     remove(id: string): Promise<void>;
     bulkRemove(ids: string[]): Promise<void>;
