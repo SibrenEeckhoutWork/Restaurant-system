@@ -12,6 +12,7 @@ import {
 } from './products.controller.js';
 import { UsersModule } from '../users/users.module.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
+import { MenuSeedService } from '../seed/menu-seed.service.js';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { ModuleConfigModule } from '../module-config/module-config.module.js';
     UsersModule,
     ModuleConfigModule,
   ],
-  providers: [ProductsService],
+  providers: [ProductsService, MenuSeedService],
   controllers: [ProductsController, CategoriesController, AllergiesController, MenuController],
   exports: [ProductsService],
 })

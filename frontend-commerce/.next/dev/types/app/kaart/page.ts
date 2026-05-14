@@ -1,10 +1,10 @@
-// File: D:\sibren\code\PROJECTS\RESTAURANTS\code\frontend-commerce\src\app\contact\page.tsx
-import * as entry from '../../../../../src/app/contact/page.js'
+// File: D:\sibren\code\PROJECTS\RESTAURANTS\code\frontend-commerce\src\app\kaart\page.tsx
+import * as entry from '../../../../../src/app/kaart/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
 import type { InstantConfigForTypeCheckInternal } from 'next/dist/build/segment-config/app/app-segment-config.js'
 
-type TEntry = typeof import('../../../../../src/app/contact/page.js')
+type TEntry = typeof import('../../../../../src/app/kaart/page.js')
 
 type SegmentParams<T extends Object = any> = T extends Record<string, any>
   ? { [K in keyof T]: T[K] extends string ? string | string[] | undefined : never }

@@ -11,7 +11,10 @@ export class ApiError extends Error {
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  if (res.ok) return res.json() as Promise<T>;
+  if (res.ok) {
+    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+    return res.json() as Promise<T>;
+  }
   let message = res.statusText;
   try {
     const body = (await res.json()) as { message?: string };

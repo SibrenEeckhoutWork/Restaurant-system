@@ -19,6 +19,21 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   cancelled: 'Geannuleerd',
 };
 
+function getStatusLabel(status: OrderStatus, deliveryType: 'delivery' | 'pickup' | null): string {
+  if (status === 'delivered') {
+    if (deliveryType === 'pickup') return 'Opgehaald';
+    if (deliveryType === 'delivery') return 'Afgeleverd';
+    return 'Aan tafel gezet';
+  }
+  return STATUS_LABELS[status];
+}
+
+function getDeliverButtonLabel(deliveryType: 'delivery' | 'pickup' | null): string {
+  if (deliveryType === 'pickup') return 'Ophalen';
+  if (deliveryType === 'delivery') return 'Afleveren';
+  return 'Aan tafel zetten';
+}
+
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
   preparing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
@@ -167,7 +182,7 @@ export function OrderDetailPanel({ order, onClose, onUpdated, onDeleted }: Props
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-base">{order.table?.name ?? order.customerName ?? 'Online bestelling'}</h2>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[order.status]}`}>
-                {STATUS_LABELS[order.status]}
+                {getStatusLabel(order.status, order.deliveryType)}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -180,6 +195,23 @@ export function OrderDetailPanel({ order, onClose, onUpdated, onDeleted }: Props
         </div>
 
         <div className="flex-1 overflow-auto px-5 py-4 space-y-4">
+          {order.deliveryType === 'delivery' && order.address && (
+            <div className="rounded-md bg-muted px-3 py-2 text-sm">
+              <span className="font-medium">Afleveradres: </span>{order.address}
+              {order.phone && <span className="ml-3 text-muted-foreground">{order.phone}</span>}
+            </div>
+          )}
+          {order.deliveryType === 'pickup' && (
+            <div className="rounded-md bg-muted px-3 py-2 text-sm">
+              <span className="font-medium">Ophalen — </span>{order.customerName ?? ''}
+              {order.phone && <span className="ml-3 text-muted-foreground">{order.phone}</span>}
+            </div>
+          )}
+          {!order.deliveryType && order.table && (
+            <div className="rounded-md bg-muted px-3 py-2 text-sm">
+              <span className="font-medium">Tafel: </span>{order.table.name}
+            </div>
+          )}
           {!isTerminal && (
             <div>
               <p className="text-sm font-medium mb-2">Status wijzigen</p>
@@ -196,7 +228,7 @@ export function OrderDetailPanel({ order, onClose, onUpdated, onDeleted }: Props
                 )}
                 {order.status === 'ready' && (
                   <Button size="sm" variant="outline" onClick={() => handleStatus('delivered')} disabled={saving}>
-                    Geleverd
+                    {getDeliverButtonLabel(order.deliveryType)}
                   </Button>
                 )}
                 <Button

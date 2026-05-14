@@ -17,7 +17,7 @@ const COLUMNS: { status: ColumnStatus; label: string; color: string }[] = [
   { status: 'pending', label: 'Nieuw', color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950/20' },
   { status: 'preparing', label: 'Bezig', color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' },
   { status: 'ready', label: 'Klaar', color: 'border-green-400 bg-green-50 dark:bg-green-950/20' },
-  { status: 'delivered', label: 'Geleverd', color: 'border-gray-400 bg-gray-50 dark:bg-gray-950/20' },
+  { status: 'delivered', label: 'Afgerond', color: 'border-gray-400 bg-gray-50 dark:bg-gray-950/20' },
 ];
 
 const STATUS_RANK: Record<ItemStatus, number> = { pending: 0, preparing: 1, ready: 2, delivered: 3 };
@@ -64,6 +64,18 @@ const NEXT_ORDER_STATUS: Record<ColumnStatus, ColumnStatus | null> = {
   delivered: null,
 };
 
+function getDeliveredLabel(deliveryType: 'delivery' | 'pickup' | null): string {
+  if (deliveryType === 'pickup') return 'Opgehaald';
+  if (deliveryType === 'delivery') return 'Afgeleverd';
+  return 'Aan tafel gezet';
+}
+
+function getOrderLocation(order: Order): string {
+  if (order.deliveryType === 'pickup') return order.customerName ?? 'Ophalen';
+  if (order.deliveryType === 'delivery') return order.address ?? order.customerName ?? 'Online';
+  return order.table?.name ?? 'Inhouse';
+}
+
 function getEffectiveStatus(order: Order): ColumnStatus {
   if (order.status === 'delivered') return 'delivered';
   const statuses = order.items.map((i) => i.itemStatus);
@@ -97,10 +109,21 @@ function OrderCard({ order, onDragStart, onItemAdvance, onOrderAdvance }: OrderC
       }}
     >
       <div className="flex items-center justify-between">
-        <span className="font-semibold text-sm">{order.table?.name ?? order.customerName ?? 'Online'}</span>
+        <div className="flex flex-col gap-0">
+          <span className="font-semibold text-sm">{getOrderLocation(order)}</span>
+          {order.deliveryType && (
+            <span className="text-xs text-muted-foreground">
+              {order.deliveryType === 'pickup' ? 'Ophalen' : 'Levering'}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{formatTime(order.createdAt)}</span>
-          {nextOrderStatus && (
+          {effectiveStatus === 'delivered' ? (
+            <span className="text-xs text-muted-foreground font-medium">
+              {getDeliveredLabel(order.deliveryType)}
+            </span>
+          ) : nextOrderStatus && (
             <button
               onClick={() => onOrderAdvance(order.id, nextOrderStatus)}
               className="text-xs px-2 py-0.5 rounded border hover:bg-muted transition-colors font-medium"
@@ -170,7 +193,7 @@ function ItemCard({ order, item, onDragStart, onAdvance }: ItemCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className={cn('size-2 rounded-full shrink-0', ORDER_STATUS_COLOR[getEffectiveStatus(order)])} title={`Order: ${COLUMN_STATUS_LABELS[getEffectiveStatus(order)]}`} />
-          <span className="text-xs text-muted-foreground font-medium">{order.table?.name ?? order.customerName ?? 'Online'}</span>
+          <span className="text-xs text-muted-foreground font-medium">{getOrderLocation(order)}</span>
         </div>
         <span className="text-xs text-muted-foreground">{formatTime(order.createdAt)}</span>
       </div>

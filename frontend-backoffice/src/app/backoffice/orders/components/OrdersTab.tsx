@@ -20,6 +20,27 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   cancelled: 'Geannuleerd',
 };
 
+function getStatusLabel(status: OrderStatus, deliveryType: 'delivery' | 'pickup' | null): string {
+  if (status === 'delivered') {
+    if (deliveryType === 'pickup') return 'Opgehaald';
+    if (deliveryType === 'delivery') return 'Afgeleverd';
+    return 'Aan tafel gezet';
+  }
+  return STATUS_LABELS[status];
+}
+
+function getOrderLocation(order: Order): string {
+  if (order.deliveryType === 'pickup') return order.customerName ?? 'Ophalen';
+  if (order.deliveryType === 'delivery') return order.address ?? order.customerName ?? 'Online';
+  return order.table?.name ?? 'Inhouse';
+}
+
+function getDeliverActionLabel(deliveryType: 'delivery' | 'pickup' | null): string {
+  if (deliveryType === 'pickup') return 'Markeer als opgehaald';
+  if (deliveryType === 'delivery') return 'Markeer als afgeleverd';
+  return 'Markeer als aan tafel gezet';
+}
+
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
   preparing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
@@ -129,7 +150,7 @@ export function OrdersTab() {
                   aria-label="Alles selecteren"
                 />
               </TableHead>
-              <TableHead>Tafel</TableHead>
+              <TableHead>Locatie</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Tijdstip</TableHead>
@@ -175,13 +196,22 @@ export function OrdersTab() {
                         aria-label={`Selecteer bestelling ${order.table?.name ?? order.customerName ?? 'Online'}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{order.table?.name ?? order.customerName ?? 'Online'}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col gap-0.5">
+                        <span>{getOrderLocation(order)}</span>
+                        {order.deliveryType && (
+                          <span className="text-xs text-muted-foreground">
+                            {order.deliveryType === 'pickup' ? 'Ophalen' : 'Levering'}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {totalQty} item{totalQty !== 1 ? 's' : ''}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[order.status]}`}>
-                        {STATUS_LABELS[order.status]}
+                        {getStatusLabel(order.status, order.deliveryType)}
                       </span>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -191,12 +221,16 @@ export function OrdersTab() {
                       })}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      {(order.status === 'ready' || order.status === 'pending' || order.status === 'preparing') && (
+                      {order.status === 'delivered' ? (
+                        <span className="text-xs text-muted-foreground">
+                          {getStatusLabel('delivered', order.deliveryType)}
+                        </span>
+                      ) : (order.status === 'ready' || order.status === 'pending' || order.status === 'preparing') ? (
                         <Button
                           size="icon-sm"
                           variant="ghost"
                           className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20"
-                          title="Markeer als geleverd"
+                          title={getDeliverActionLabel(order.deliveryType)}
                           disabled={delivering.has(order.id)}
                           onClick={(e) => handleDeliver(e, order)}
                         >
@@ -204,7 +238,7 @@ export function OrdersTab() {
                             ? <Loader2 className="size-4 animate-spin" />
                             : <CheckCheck className="size-4" />}
                         </Button>
-                      )}
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 );
