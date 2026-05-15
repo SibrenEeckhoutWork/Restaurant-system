@@ -1,4 +1,4 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Order, OrderStatus } from './order.entity.js';
@@ -19,26 +19,27 @@ export class OrdersService {
     private readonly customersService: CustomersService,
   ) {}
 
-  findAll(): Promise<Order[]> {
+  findAll(tenantId: string): Promise<Order[]> {
     return this.orderRepo.find({
+      where: { tenantId },
       relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
       order: { createdAt: 'DESC' },
     });
   }
 
-  async findById(id: string): Promise<Order> {
+  async findById(id: string, tenantId: string): Promise<Order> {
     const order = await this.orderRepo.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
     });
     if (!order) throw new NotFoundException('Order not found');
     return order;
   }
 
-  async create(dto: CreateOrderDto): Promise<Order> {
+  async create(dto: CreateOrderDto, tenantId: string): Promise<Order> {
     let customerId: string | null = null;
     if (dto.email) {
-      const customer = await this.customersService.findByEmail(dto.email);
+      const customer = await this.customersService.findByEmailInTenant(dto.email, tenantId);
       customerId = customer?.id ?? null;
     }
     const order = await this.orderRepo.save(
@@ -50,14 +51,15 @@ export class OrdersService {
         address: dto.address ?? null,
         deliveryType: dto.deliveryType ?? null,
         customerId,
+        tenantId,
       }),
     );
     await this.saveItems(order.id, dto.items);
-    return this.findById(order.id);
+    return this.findById(order.id, tenantId);
   }
 
-  async updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<Order> {
-    const order = await this.findById(id);
+  async updateStatus(id: string, dto: UpdateOrderStatusDto, tenantId: string): Promise<Order> {
+    const order = await this.findById(id, tenantId);
     order.status = dto.status;
     await this.orderRepo.save(order);
     const syncStatuses: Partial<Record<string, 'pending' | 'preparing' | 'ready' | 'delivered'>> = {
@@ -70,24 +72,24 @@ export class OrdersService {
     if (itemStatus) {
       await this.itemRepo.update({ orderId: id }, { itemStatus });
     }
-    return this.findById(id);
+    return this.findById(id, tenantId);
   }
 
-  async updateItems(id: string, dto: UpdateOrderItemsDto): Promise<Order> {
-    await this.findById(id);
+  async updateItems(id: string, dto: UpdateOrderItemsDto, tenantId: string): Promise<Order> {
+    await this.findById(id, tenantId);
     const existing = await this.itemRepo.find({ where: { orderId: id } });
     await this.itemRepo.remove(existing);
     await this.saveItems(id, dto.items);
-    return this.findById(id);
+    return this.findById(id, tenantId);
   }
 
-  async remove(id: string): Promise<void> {
-    const order = await this.findById(id);
+  async remove(id: string, tenantId: string): Promise<void> {
+    const order = await this.findById(id, tenantId);
     await this.orderRepo.remove(order);
   }
 
-  async bulkRemove(ids: string[]): Promise<void> {
-    await this.orderRepo.delete({ id: In(ids) });
+  async bulkRemove(ids: string[], tenantId: string): Promise<void> {
+    await this.orderRepo.delete({ id: In(ids), tenantId });
   }
 
   private async saveItems(orderId: string, itemDtos: CreateOrderItemDto[]): Promise<void> {
@@ -118,10 +120,11 @@ export class OrdersService {
     orderId: string,
     itemId: string,
     status: 'pending' | 'preparing' | 'ready' | 'delivered',
+    tenantId: string,
   ): Promise<Order> {
     await this.itemRepo.update({ id: itemId, orderId }, { itemStatus: status });
 
-    const order = await this.findById(orderId);
+    const order = await this.findById(orderId, tenantId);
     const statuses = order.items.map((i) => i.itemStatus);
 
     let next = order.status;
@@ -138,6 +141,6 @@ export class OrdersService {
       await this.orderRepo.save(order);
     }
 
-    return this.findById(orderId);
+    return this.findById(orderId, tenantId);
   }
 }

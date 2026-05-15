@@ -18,6 +18,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
+import { CurrentTenantId } from '../auth/decorators/current-tenant-id.decorator.js';
 
 @ApiTags('Customers')
 @ApiBearerAuth()
@@ -28,8 +29,8 @@ export class CustomersController {
 
   @Get()
   @RequirePermission('customers.read')
-  findAll() {
-    return this.customersService.findAll();
+  findAll(@CurrentTenantId() tenantId: string) {
+    return this.customersService.findAll(tenantId);
   }
 
   @Get(':id')
@@ -40,8 +41,8 @@ export class CustomersController {
 
   @Post()
   @RequirePermission('customers.create')
-  create(@Body() dto: CreateCustomerDto) {
-    return this.customersService.create(dto);
+  create(@Body() dto: CreateCustomerDto, @CurrentTenantId() tenantId: string) {
+    return this.customersService.create(dto, tenantId);
   }
 
   @Patch(':id')

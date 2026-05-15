@@ -7,6 +7,7 @@ export declare enum SlotRecurrence {
 }
 export declare class ReservationSlot {
     id: string;
+    tenantId: string;
     startTime: string;
     endTime: string;
     maxCapacity: number;

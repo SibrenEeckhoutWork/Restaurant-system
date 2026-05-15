@@ -31,11 +31,11 @@ let ReservationsService = class ReservationsService {
         this.roomRepo = roomRepo;
         this.customerRepo = customerRepo;
     }
-    async resolveRooms(roomIds) {
+    async resolveRooms(roomIds, tenantId) {
         if (!roomIds.length)
             return { rooms: [], maxCapacity: 0 };
         const rooms = await this.roomRepo.find({
-            where: { id: (0, typeorm_2.In)(roomIds) },
+            where: { id: (0, typeorm_2.In)(roomIds), tenantId },
             relations: { tables: true },
         });
         const maxCapacity = rooms.reduce((sum, r) => sum + r.tables.reduce((s, t) => s + t.capacity, 0), 0);
@@ -52,24 +52,26 @@ let ReservationsService = class ReservationsService {
         }
         return true;
     }
-    async createSlot(dto) {
-        const { rooms, maxCapacity } = await this.resolveRooms(dto.roomIds);
+    async createSlot(dto, tenantId) {
+        const { rooms, maxCapacity } = await this.resolveRooms(dto.roomIds, tenantId);
         const slot = this.slotRepo.create({
             startTime: dto.startTime,
             endTime: dto.endTime,
             isActive: dto.isActive ?? true,
             maxCapacity,
             rooms,
+            tenantId,
             recurrence: dto.recurrence ?? reservation_slot_entity_js_1.SlotRecurrence.DAILY,
             daysOfWeek: dto.daysOfWeek ?? null,
             monthDay: dto.monthDay ?? null,
         });
         return this.slotRepo.save(slot);
     }
-    async findSlots(opts = {}) {
+    async findSlots(tenantId, opts = {}) {
         const qb = this.slotRepo
             .createQueryBuilder('slot')
             .leftJoinAndSelect('slot.rooms', 'room')
+            .where('slot.tenantId = :tenantId', { tenantId })
             .orderBy('slot.startTime', 'ASC');
         if (opts.date) {
             qb.leftJoinAndSelect('slot.reservations', 'res', 'res.date = :date AND res.status != :cancelled', { date: opts.date, cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED });
@@ -79,19 +81,19 @@ let ReservationsService = class ReservationsService {
             return all;
         return all.filter((s) => this.slotMatchesDate(s, opts.date));
     }
-    async findSlotById(id) {
+    async findSlotById(id, tenantId) {
         const slot = await this.slotRepo.findOne({
-            where: { id },
+            where: { id, tenantId },
             relations: { rooms: true },
         });
         if (!slot)
             throw new common_1.NotFoundException('Slot not found');
         return slot;
     }
-    async updateSlot(id, dto) {
-        const slot = await this.findSlotById(id);
+    async updateSlot(id, dto, tenantId) {
+        const slot = await this.findSlotById(id, tenantId);
         if (dto.roomIds) {
-            const { rooms, maxCapacity } = await this.resolveRooms(dto.roomIds);
+            const { rooms, maxCapacity } = await this.resolveRooms(dto.roomIds, tenantId);
             slot.rooms = rooms;
             slot.maxCapacity = maxCapacity;
         }
@@ -109,66 +111,60 @@ let ReservationsService = class ReservationsService {
             slot.monthDay = dto.monthDay;
         return this.slotRepo.save(slot);
     }
-    async removeSlot(id) {
-        const slot = await this.findSlotById(id);
+    async removeSlot(id, tenantId) {
+        const slot = await this.findSlotById(id, tenantId);
         await this.slotRepo.remove(slot);
     }
-    async getAvailableDatesForMonth(year, month, partySize) {
+    async getBookedTableIdsForDate(date, tableIds) {
+        if (!tableIds.length)
+            return new Set();
+        const rows = await this.reservationRepo
+            .createQueryBuilder('r')
+            .select('r.tableId', 'tableId')
+            .where('r.date = :date', { date })
+            .andWhere('r.status != :cancelled', { cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED })
+            .andWhere('r.tableId IS NOT NULL')
+            .andWhere('r.tableId IN (:...tableIds)', { tableIds })
+            .distinct(true)
+            .getRawMany();
+        return new Set(rows.map((r) => r.tableId));
+    }
+    async getAvailableDatesForMonth(year, month, partySize, tenantId) {
         const daysInMonth = new Date(year, month, 0).getDate();
         const today = new Date().toISOString().slice(0, 10);
         const pad = (n) => String(n).padStart(2, '0');
-        const fromDate = `${year}-${pad(month)}-01`;
-        const toDate = `${year}-${pad(month)}-${pad(daysInMonth)}`;
-        const allSlots = await this.slotRepo.find({ where: { isActive: true } });
-        if (!allSlots.length)
-            return [];
-        const bookings = await this.reservationRepo
-            .createQueryBuilder('r')
-            .select('r.date', 'date')
-            .addSelect('r.slotId', 'slotId')
-            .addSelect('SUM(r.partySize)', 'booked')
-            .where('r.date >= :fromDate AND r.date <= :toDate', { fromDate, toDate })
-            .andWhere('r.status != :cancelled', { cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED })
-            .groupBy('r.date')
-            .addGroupBy('r.slotId')
-            .getRawMany();
-        const bookingMap = new Map();
-        for (const b of bookings) {
-            if (!bookingMap.has(b.date))
-                bookingMap.set(b.date, new Map());
-            bookingMap.get(b.date).set(b.slotId, parseInt(b.booked, 10));
-        }
         const available = [];
         for (let d = 1; d <= daysInMonth; d++) {
             const iso = `${year}-${pad(month)}-${pad(d)}`;
             if (iso < today)
                 continue;
-            const matching = allSlots.filter((s) => this.slotMatchesDate(s, iso));
-            for (const slot of matching) {
-                const booked = bookingMap.get(iso)?.get(slot.id) ?? 0;
-                if (slot.maxCapacity - booked >= partySize) {
-                    available.push(iso);
-                    break;
-                }
-            }
+            const slots = await this.getAvailability(iso, partySize, tenantId);
+            if (slots.length > 0)
+                available.push(iso);
         }
         return available;
     }
-    async getAvailability(date, partySize) {
-        const slots = await this.findSlots({ date });
-        return slots.filter((slot) => {
-            if (!slot.isActive)
-                return false;
-            const booked = (slot.reservations ?? []).reduce((sum, r) => sum + r.partySize, 0);
-            return slot.maxCapacity - booked >= partySize;
+    async getAvailability(date, partySize, tenantId) {
+        const slots = await this.findSlots(tenantId, { date });
+        const activeSlots = slots.filter((s) => s.isActive);
+        if (!activeSlots.length)
+            return [];
+        const slotsWithTables = await this.slotRepo.find({
+            where: { id: (0, typeorm_2.In)(activeSlots.map((s) => s.id)), tenantId },
+            relations: { rooms: { tables: true } },
         });
+        const slotTablesMap = new Map(slotsWithTables.map((s) => [s.id, s.rooms.flatMap((r) => r.tables)]));
+        const allTableIds = [...new Set(slotsWithTables.flatMap((s) => s.rooms.flatMap((r) => r.tables.map((t) => t.id))))];
+        const bookedTableIds = await this.getBookedTableIdsForDate(date, allTableIds);
+        return activeSlots.filter((slot) => (slotTablesMap.get(slot.id) ?? []).some((t) => !bookedTableIds.has(t.id) && t.capacity >= partySize));
     }
-    findAll(opts = {}) {
+    findAll(tenantId, opts = {}) {
         const qb = this.reservationRepo
             .createQueryBuilder('r')
             .leftJoinAndSelect('r.customer', 'customer')
             .leftJoinAndSelect('r.table', 'table')
             .leftJoinAndSelect('r.slot', 'slot')
+            .where('r.tenantId = :tenantId', { tenantId })
             .orderBy('r.date', 'DESC')
             .addOrderBy('slot.startTime', 'ASC');
         if (opts.date)
@@ -181,17 +177,17 @@ let ReservationsService = class ReservationsService {
             qb.andWhere('r.status = :status', { status: opts.status });
         return qb.getMany();
     }
-    async findById(id) {
+    async findById(id, tenantId) {
         const r = await this.reservationRepo.findOne({
-            where: { id },
+            where: { id, tenantId },
             relations: { customer: true, table: true, slot: { rooms: true } },
         });
         if (!r)
             throw new common_1.NotFoundException('Reservation not found');
         return r;
     }
-    async createReservation(dto) {
-        const slot = await this.slotRepo.findOne({ where: { id: dto.slotId } });
+    async createReservation(dto, tenantId) {
+        const slot = await this.slotRepo.findOne({ where: { id: dto.slotId, tenantId } });
         if (!slot)
             throw new common_1.NotFoundException('Slot not found');
         if (!slot.isActive)
@@ -207,7 +203,7 @@ let ReservationsService = class ReservationsService {
         if (booked + dto.partySize > slot.maxCapacity) {
             throw new common_1.BadRequestException('Insufficient capacity for this slot on this date');
         }
-        const customer = await this.customerRepo.findOne({ where: { email: dto.guestEmail } });
+        const customer = await this.customerRepo.findOne({ where: { email: dto.guestEmail, tenantId } });
         return this.reservationRepo.save(this.reservationRepo.create({
             date: dto.date,
             slotId: dto.slotId,
@@ -218,34 +214,28 @@ let ReservationsService = class ReservationsService {
             guestPhone: dto.guestPhone ?? null,
             notes: dto.notes ?? null,
             customerId: customer?.id ?? null,
+            tenantId,
             status: reservation_entity_js_1.ReservationStatus.PENDING,
         }));
     }
-    async createPublicReservation(dto) {
+    async createPublicReservation(dto, tenantId) {
         const slot = await this.slotRepo.findOne({
-            where: { id: dto.slotId },
+            where: { id: dto.slotId, tenantId },
             relations: { rooms: { tables: true } },
         });
         if (!slot)
             throw new common_1.NotFoundException('Slot not found');
         if (!slot.isActive)
             throw new common_1.BadRequestException('Slot is not active');
-        const bookedRows = await this.reservationRepo
-            .createQueryBuilder('r')
-            .select('COALESCE(SUM(r.partySize), 0)', 'total')
-            .where('r.slotId = :slotId', { slotId: dto.slotId })
-            .andWhere('r.date = :date', { date: dto.date })
-            .andWhere('r.status != :cancelled', { cancelled: reservation_entity_js_1.ReservationStatus.CANCELLED })
-            .getRawOne();
-        const booked = parseInt(bookedRows?.total ?? '0', 10);
-        if (booked + dto.partySize > slot.maxCapacity) {
-            throw new common_1.BadRequestException('Insufficient capacity for this slot on this date');
-        }
         const tables = slot.rooms.flatMap((r) => r.tables);
         if (!tables.length)
             throw new common_1.BadRequestException('No tables configured for this slot');
-        const table = tables.find((t) => t.capacity >= dto.partySize) ?? tables[0];
-        const customer = await this.customerRepo.findOne({ where: { email: dto.guestEmail } });
+        const allTableIds = tables.map((t) => t.id);
+        const bookedTableIds = await this.getBookedTableIdsForDate(dto.date, allTableIds);
+        const table = tables.find((t) => !bookedTableIds.has(t.id) && t.capacity >= dto.partySize);
+        if (!table)
+            throw new common_1.BadRequestException('No tables available for this slot on this date');
+        const customer = await this.customerRepo.findOne({ where: { email: dto.guestEmail, tenantId } });
         return this.reservationRepo.save(this.reservationRepo.create({
             date: dto.date,
             slotId: dto.slotId,
@@ -256,20 +246,21 @@ let ReservationsService = class ReservationsService {
             guestPhone: dto.guestPhone ?? null,
             notes: dto.notes ?? null,
             customerId: customer?.id ?? null,
+            tenantId,
             status: reservation_entity_js_1.ReservationStatus.PENDING,
         }));
     }
-    async updateStatus(id, dto) {
-        const r = await this.findById(id);
+    async updateStatus(id, dto, tenantId) {
+        const r = await this.findById(id, tenantId);
         r.status = dto.status;
         return this.reservationRepo.save(r);
     }
-    async remove(id) {
-        const r = await this.findById(id);
+    async remove(id, tenantId) {
+        const r = await this.findById(id, tenantId);
         await this.reservationRepo.remove(r);
     }
-    async bulkRemove(ids) {
-        await this.reservationRepo.delete({ id: (0, typeorm_2.In)(ids) });
+    async bulkRemove(ids, tenantId) {
+        await this.reservationRepo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
 };
 exports.ReservationsService = ReservationsService;

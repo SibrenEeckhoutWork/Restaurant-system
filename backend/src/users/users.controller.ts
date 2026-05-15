@@ -18,6 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
+import { CurrentTenantId } from '../auth/decorators/current-tenant-id.decorator.js';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -28,8 +29,8 @@ export class UsersController {
 
   @Get()
   @RequirePermission('users.read')
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@CurrentTenantId() tenantId: string) {
+    return this.usersService.findAll(tenantId);
   }
 
   @Get(':id')
@@ -40,8 +41,8 @@ export class UsersController {
 
   @Post()
   @RequirePermission('users.create')
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  create(@Body() dto: CreateUserDto, @CurrentTenantId() tenantId: string) {
+    return this.usersService.create({ ...dto, tenantId });
   }
 
   @Patch(':id')

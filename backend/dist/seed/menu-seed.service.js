@@ -17,8 +17,10 @@ exports.MenuSeedService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const config_1 = require("@nestjs/config");
 const category_entity_js_1 = require("../products/category.entity.js");
 const product_entity_js_1 = require("../products/product.entity.js");
+const tenants_service_js_1 = require("../tenants/tenants.service.js");
 const ONTBIJT_MENU = [
     {
         naam: 'Pancake ontbijt',
@@ -152,31 +154,41 @@ const ONTBIJT_MENU = [
 let MenuSeedService = MenuSeedService_1 = class MenuSeedService {
     categoryRepo;
     productRepo;
+    tenantsService;
+    config;
     logger = new common_1.Logger(MenuSeedService_1.name);
-    constructor(categoryRepo, productRepo) {
+    constructor(categoryRepo, productRepo, tenantsService, config) {
         this.categoryRepo = categoryRepo;
         this.productRepo = productRepo;
+        this.tenantsService = tenantsService;
+        this.config = config;
     }
     async onApplicationBootstrap() {
+        const slug = this.config.get('DEFAULT_TENANT_SLUG');
+        if (!slug)
+            return;
+        const tenant = await this.tenantsService.findBySlug(slug);
+        if (!tenant)
+            return;
         for (const categorySeed of ONTBIJT_MENU) {
-            const category = await this.upsertCategory(categorySeed);
+            const category = await this.upsertCategory(categorySeed, tenant.id);
             for (const productSeed of categorySeed.producten) {
-                await this.upsertProduct(productSeed, category);
+                await this.upsertProduct(productSeed, category, tenant.id);
             }
         }
     }
-    async upsertCategory(seed) {
-        const existing = await this.categoryRepo.findOne({ where: { name: seed.naam } });
+    async upsertCategory(seed, tenantId) {
+        const existing = await this.categoryRepo.findOne({ where: { name: seed.naam, tenantId } });
         if (existing)
             return existing;
-        const category = this.categoryRepo.create({ name: seed.naam, sortOrder: seed.sortOrder });
+        const category = this.categoryRepo.create({ name: seed.naam, sortOrder: seed.sortOrder, tenantId });
         const saved = await this.categoryRepo.save(category);
         this.logger.log(`Categorie aangemaakt: ${seed.naam}`);
         return saved;
     }
-    async upsertProduct(seed, category) {
+    async upsertProduct(seed, category, tenantId) {
         const existing = await this.productRepo.findOne({
-            where: { name: seed.naam, categoryId: category.id },
+            where: { name: seed.naam, categoryId: category.id, tenantId },
         });
         if (existing)
             return;
@@ -186,6 +198,7 @@ let MenuSeedService = MenuSeedService_1 = class MenuSeedService {
             price: seed.prijs,
             isAvailable: true,
             categoryId: category.id,
+            tenantId,
             allergies: [],
             accessories: [],
         });
@@ -199,6 +212,8 @@ exports.MenuSeedService = MenuSeedService = MenuSeedService_1 = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(category_entity_js_1.Category)),
     __param(1, (0, typeorm_1.InjectRepository)(product_entity_js_1.Product)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        tenants_service_js_1.TenantsService,
+        config_1.ConfigService])
 ], MenuSeedService);
 //# sourceMappingURL=menu-seed.service.js.map

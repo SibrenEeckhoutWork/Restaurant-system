@@ -19,6 +19,7 @@ const decimalTransformer = {
 };
 let Product = class Product {
     id;
+    tenantId;
     name;
     description;
     price;
@@ -33,6 +34,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Product.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Product.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)

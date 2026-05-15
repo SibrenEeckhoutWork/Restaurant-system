@@ -21,53 +21,57 @@ const update_table_dto_js_1 = require("./dto/update-table.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
 let TablesController = class TablesController {
     tablesService;
     constructor(tablesService) {
         this.tablesService = tablesService;
     }
-    findAll(roomId) {
-        return this.tablesService.findAll(roomId);
+    findAll(tenantId, roomId) {
+        return this.tablesService.findAll(tenantId, roomId);
     }
-    findOne(id) {
-        return this.tablesService.findById(id);
+    findOne(id, tenantId) {
+        return this.tablesService.findById(id, tenantId);
     }
-    create(dto) {
-        return this.tablesService.create(dto);
+    create(dto, tenantId) {
+        return this.tablesService.create(dto, tenantId);
     }
-    update(id, dto) {
-        return this.tablesService.update(id, dto);
+    update(id, dto, tenantId) {
+        return this.tablesService.update(id, dto, tenantId);
     }
-    bulkDelete(body) {
-        return this.tablesService.bulkRemove(body.ids);
+    bulkDelete(body, tenantId) {
+        return this.tablesService.bulkRemove(body.ids, tenantId);
     }
-    remove(id) {
-        return this.tablesService.remove(id);
+    remove(id, tenantId) {
+        return this.tablesService.remove(id, tenantId);
     }
 };
 exports.TablesController = TablesController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('tables.get'),
-    __param(0, (0, common_1.Query)('roomId')),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
+    __param(1, (0, common_1.Query)('roomId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permission_decorator_js_1.RequirePermission)('tables.get'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('tables.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_table_dto_js_1.CreateTableDto]),
+    __metadata("design:paramtypes", [create_table_dto_js_1.CreateTableDto, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "create", null);
 __decorate([
@@ -75,8 +79,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('tables.update'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_table_dto_js_1.UpdateTableDto]),
+    __metadata("design:paramtypes", [String, update_table_dto_js_1.UpdateTableDto, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "update", null);
 __decorate([
@@ -84,8 +89,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('tables.delete'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "bulkDelete", null);
 __decorate([
@@ -93,8 +99,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('tables.delete'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], TablesController.prototype, "remove", null);
 exports.TablesController = TablesController = __decorate([

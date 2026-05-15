@@ -80,17 +80,17 @@ export class AppWebSocketGateway implements OnGatewayConnection {
 
   @SubscribeMessage('item:status')
   async handleItemStatus(
-    @MessageBody() data: { orderId: string; itemId: string; status: 'pending' | 'preparing' | 'ready' | 'delivered' },
+    @MessageBody() data: { orderId: string; itemId: string; status: 'pending' | 'preparing' | 'ready' | 'delivered'; tenantId: string },
   ): Promise<void> {
-    const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status);
+    const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status, data.tenantId);
     this.emitToRoom('kitchen', 'order:updated', order);
   }
 
   @SubscribeMessage('order:status')
   async handleOrderStatus(
-    @MessageBody() data: { orderId: string; status: OrderStatus },
+    @MessageBody() data: { orderId: string; status: OrderStatus; tenantId: string },
   ): Promise<void> {
-    const order = await this.ordersService.updateStatus(data.orderId, { status: data.status });
+    const order = await this.ordersService.updateStatus(data.orderId, { status: data.status }, data.tenantId);
     this.emitToRoom('kitchen', 'order:updated', order);
   }
 }

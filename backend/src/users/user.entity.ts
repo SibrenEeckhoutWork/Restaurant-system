@@ -11,7 +11,13 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ nullable: true, type: 'uuid' })
+  tenantId: string | null;
+
+  @Column({ default: false })
+  isSuperAdmin: boolean;
+
+  @Column()
   email: string;
 
   @Column()

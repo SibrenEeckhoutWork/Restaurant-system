@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const table_entity_js_1 = require("../tables/table.entity.js");
 let Room = class Room {
     id;
+    tenantId;
     name;
     capacity;
     tables;
@@ -23,6 +24,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Room.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Room.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)

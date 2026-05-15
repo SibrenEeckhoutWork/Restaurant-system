@@ -1,8 +1,10 @@
 import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Category } from '../products/category.entity.js';
 import { Product } from '../products/product.entity.js';
+import { TenantsService } from '../tenants/tenants.service.js';
 
 interface ProductSeed {
   naam: string;
@@ -162,31 +164,37 @@ export class MenuSeedService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Category) private readonly categoryRepo: Repository<Category>,
     @InjectRepository(Product) private readonly productRepo: Repository<Product>,
+    private readonly tenantsService: TenantsService,
+    private readonly config: ConfigService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    for (const categorySeed of ONTBIJT_MENU) {
-      const category = await this.upsertCategory(categorySeed);
+    const slug = this.config.get<string>('DEFAULT_TENANT_SLUG');
+    if (!slug) return;
+    const tenant = await this.tenantsService.findBySlug(slug);
+    if (!tenant) return;
 
+    for (const categorySeed of ONTBIJT_MENU) {
+      const category = await this.upsertCategory(categorySeed, tenant.id);
       for (const productSeed of categorySeed.producten) {
-        await this.upsertProduct(productSeed, category);
+        await this.upsertProduct(productSeed, category, tenant.id);
       }
     }
   }
 
-  private async upsertCategory(seed: CategorySeed): Promise<Category> {
-    const existing = await this.categoryRepo.findOne({ where: { name: seed.naam } });
+  private async upsertCategory(seed: CategorySeed, tenantId: string): Promise<Category> {
+    const existing = await this.categoryRepo.findOne({ where: { name: seed.naam, tenantId } });
     if (existing) return existing;
 
-    const category = this.categoryRepo.create({ name: seed.naam, sortOrder: seed.sortOrder });
+    const category = this.categoryRepo.create({ name: seed.naam, sortOrder: seed.sortOrder, tenantId });
     const saved = await this.categoryRepo.save(category);
     this.logger.log(`Categorie aangemaakt: ${seed.naam}`);
     return saved;
   }
 
-  private async upsertProduct(seed: ProductSeed, category: Category): Promise<void> {
+  private async upsertProduct(seed: ProductSeed, category: Category, tenantId: string): Promise<void> {
     const existing = await this.productRepo.findOne({
-      where: { name: seed.naam, categoryId: category.id },
+      where: { name: seed.naam, categoryId: category.id, tenantId },
     });
     if (existing) return;
 
@@ -196,6 +204,7 @@ export class MenuSeedService implements OnApplicationBootstrap {
       price: seed.prijs,
       isAvailable: true,
       categoryId: category.id,
+      tenantId,
       allergies: [],
       accessories: [],
     });

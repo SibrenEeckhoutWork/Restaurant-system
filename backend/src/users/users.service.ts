@@ -10,8 +10,8 @@ import { UpdateUserDto } from './dto/update-user.dto.js';
 export class UsersService {
   constructor(@InjectRepository(User) private readonly repo: Repository<User>) {}
 
-  findAll(): Promise<User[]> {
-    return this.repo.find({ order: { createdAt: 'DESC' } });
+  findAll(tenantId: string): Promise<User[]> {
+    return this.repo.find({ where: { tenantId }, order: { createdAt: 'DESC' } });
   }
 
   async findById(id: string): Promise<User | null> {
@@ -22,12 +22,23 @@ export class UsersService {
     return this.repo.findOne({ where: { email } });
   }
 
-  count(): Promise<number> {
-    return this.repo.count();
+  findByEmailInTenant(email: string, tenantId: string): Promise<User | null> {
+    return this.repo.findOne({ where: { email, tenantId } });
   }
 
-  async create(data: CreateUserDto | { email: string; password: string; permissions: string[]; firstName?: string; lastName?: string }): Promise<User> {
-    const existing = await this.findByEmail(data.email);
+  findSuperAdminByEmail(email: string): Promise<User | null> {
+    return this.repo.findOne({ where: { email, isSuperAdmin: true } });
+  }
+
+  count(tenantId?: string): Promise<number> {
+    return tenantId ? this.repo.count({ where: { tenantId } }) : this.repo.count();
+  }
+
+  async create(data: CreateUserDto | { email: string; password: string; permissions: string[]; firstName?: string; lastName?: string; tenantId?: string | null; isSuperAdmin?: boolean }): Promise<User> {
+    const tenantId = ('tenantId' in data ? data.tenantId : undefined) ?? null;
+    const existing = tenantId
+      ? await this.findByEmailInTenant(data.email, tenantId)
+      : await this.findByEmail(data.email);
     if (existing) throw new ConflictException('Email already in use');
 
     const hashed = await bcrypt.hash(data.password, 10);
@@ -39,6 +50,8 @@ export class UsersService {
         lastName: ('lastName' in data && data.lastName) ? data.lastName : '',
         isActive: ('isActive' in data && data.isActive !== undefined) ? data.isActive : true,
         permissions: data.permissions ?? [],
+        tenantId: tenantId,
+        isSuperAdmin: ('isSuperAdmin' in data && data.isSuperAdmin) ? data.isSuperAdmin : false,
       }),
     );
   }

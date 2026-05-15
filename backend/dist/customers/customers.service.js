@@ -56,21 +56,24 @@ let CustomersService = class CustomersService {
     constructor(repo) {
         this.repo = repo;
     }
-    findAll() {
-        return this.repo.find({ order: { createdAt: 'DESC' } });
+    findAll(tenantId) {
+        return this.repo.find({ where: { tenantId }, order: { createdAt: 'DESC' } });
     }
     findByEmail(email) {
         return this.repo.findOne({ where: { email } });
     }
+    findByEmailInTenant(email, tenantId) {
+        return this.repo.findOne({ where: { email, tenantId } });
+    }
     findById(id) {
         return this.repo.findOne({ where: { id } });
     }
-    async create(data) {
-        const existing = await this.findByEmail(data.email);
+    async create(data, tenantId) {
+        const existing = await this.findByEmailInTenant(data.email, tenantId);
         if (existing)
             throw new common_1.ConflictException('Email already in use');
         const password = await bcrypt.hash(data.password, 10);
-        return this.repo.save(this.repo.create({ ...data, password }));
+        return this.repo.save(this.repo.create({ ...data, password, tenantId }));
     }
     async update(id, dto) {
         const customer = await this.repo.findOne({ where: { id } });

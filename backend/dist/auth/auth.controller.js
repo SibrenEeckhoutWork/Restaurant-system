@@ -17,10 +17,12 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const auth_service_js_1 = require("./auth.service.js");
 const login_dto_js_1 = require("./dto/login.dto.js");
+const super_admin_login_dto_js_1 = require("./dto/super-admin-login.dto.js");
 const customer_register_dto_js_1 = require("./dto/customer-register.dto.js");
 const customer_login_dto_js_1 = require("./dto/customer-login.dto.js");
 const jwt_auth_guard_js_1 = require("./guards/jwt-auth.guard.js");
 const jwt_customer_guard_js_1 = require("./guards/jwt-customer.guard.js");
+const super_admin_guard_js_1 = require("./guards/super-admin.guard.js");
 const current_user_decorator_js_1 = require("./decorators/current-user.decorator.js");
 const config_1 = require("@nestjs/config");
 let AuthController = class AuthController {
@@ -47,6 +49,24 @@ let AuthController = class AuthController {
     }
     me(user) {
         return this.authService.me(user.sub);
+    }
+    superAdminLogin(dto, res) {
+        return this.authService.superAdminLogin(dto, res);
+    }
+    async superAdminRefresh(req, res) {
+        const token = req.cookies?.['sa_refresh_token'];
+        if (!token)
+            return res.status(common_1.HttpStatus.UNAUTHORIZED).json({ message: 'No refresh token' });
+        const payload = this.authService.verifyRefreshCookie(token, this.config.getOrThrow('SUPER_ADMIN_REFRESH_SECRET'));
+        if (!payload)
+            return res.status(common_1.HttpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+        return this.authService.superAdminRefresh(payload.sub, token, res);
+    }
+    superAdminMe(req) {
+        return this.authService.superAdminMe(req.user.sub);
+    }
+    superAdminLogout(req, res) {
+        return this.authService.superAdminLogout(req.user.sub, res);
     }
     customerRegister(dto) {
         return this.authService.customerRegister(dto);
@@ -113,6 +133,48 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "me", null);
+__decorate([
+    (0, common_1.Post)('super-admin/login'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Super admin login' }),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [super_admin_login_dto_js_1.SuperAdminLoginDto, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "superAdminLogin", null);
+__decorate([
+    (0, common_1.Post)('super-admin/refresh'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Refresh super admin access token via cookie' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "superAdminRefresh", null);
+__decorate([
+    (0, common_1.Get)('super-admin/me'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get current super admin' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "superAdminMe", null);
+__decorate([
+    (0, common_1.Post)('super-admin/logout'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Super admin logout' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "superAdminLogout", null);
 __decorate([
     (0, common_1.Post)('customer/register'),
     (0, swagger_1.ApiOperation)({ summary: 'Customer registration' }),

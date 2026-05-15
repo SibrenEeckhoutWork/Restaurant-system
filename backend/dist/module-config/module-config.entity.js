@@ -12,12 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModuleConfig = void 0;
 const typeorm_1 = require("typeorm");
 let ModuleConfig = class ModuleConfig {
+    id;
+    tenantId;
     permission;
     required;
 };
 exports.ModuleConfig = ModuleConfig;
 __decorate([
-    (0, typeorm_1.PrimaryColumn)(),
+    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    __metadata("design:type", String)
+], ModuleConfig.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], ModuleConfig.prototype, "tenantId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], ModuleConfig.prototype, "permission", void 0);
 __decorate([
@@ -25,6 +35,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], ModuleConfig.prototype, "required", void 0);
 exports.ModuleConfig = ModuleConfig = __decorate([
-    (0, typeorm_1.Entity)('module_configs')
+    (0, typeorm_1.Entity)('module_configs'),
+    (0, typeorm_1.Unique)(['tenantId', 'permission'])
 ], ModuleConfig);
 //# sourceMappingURL=module-config.entity.js.map

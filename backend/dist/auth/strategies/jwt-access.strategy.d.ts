@@ -4,6 +4,7 @@ export interface JwtPayload {
     sub: string;
     email: string;
     type: 'user';
+    tenantId: string;
 }
 declare const JwtAccessStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
     validate(...args: any[]): unknown;

@@ -64,11 +64,11 @@ let AppWebSocketGateway = AppWebSocketGateway_1 = class AppWebSocketGateway {
         void client.join(room);
     }
     async handleItemStatus(data) {
-        const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status);
+        const order = await this.ordersService.updateItemStatus(data.orderId, data.itemId, data.status, data.tenantId);
         this.emitToRoom('kitchen', 'order:updated', order);
     }
     async handleOrderStatus(data) {
-        const order = await this.ordersService.updateStatus(data.orderId, { status: data.status });
+        const order = await this.ordersService.updateStatus(data.orderId, { status: data.status }, data.tenantId);
         this.emitToRoom('kitchen', 'order:updated', order);
     }
 };

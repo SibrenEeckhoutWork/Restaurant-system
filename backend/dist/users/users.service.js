@@ -56,8 +56,8 @@ let UsersService = class UsersService {
     constructor(repo) {
         this.repo = repo;
     }
-    findAll() {
-        return this.repo.find({ order: { createdAt: 'DESC' } });
+    findAll(tenantId) {
+        return this.repo.find({ where: { tenantId }, order: { createdAt: 'DESC' } });
     }
     async findById(id) {
         return this.repo.findOne({ where: { id } });
@@ -65,11 +65,20 @@ let UsersService = class UsersService {
     findByEmail(email) {
         return this.repo.findOne({ where: { email } });
     }
-    count() {
-        return this.repo.count();
+    findByEmailInTenant(email, tenantId) {
+        return this.repo.findOne({ where: { email, tenantId } });
+    }
+    findSuperAdminByEmail(email) {
+        return this.repo.findOne({ where: { email, isSuperAdmin: true } });
+    }
+    count(tenantId) {
+        return tenantId ? this.repo.count({ where: { tenantId } }) : this.repo.count();
     }
     async create(data) {
-        const existing = await this.findByEmail(data.email);
+        const tenantId = ('tenantId' in data ? data.tenantId : undefined) ?? null;
+        const existing = tenantId
+            ? await this.findByEmailInTenant(data.email, tenantId)
+            : await this.findByEmail(data.email);
         if (existing)
             throw new common_1.ConflictException('Email already in use');
         const hashed = await bcrypt.hash(data.password, 10);
@@ -80,6 +89,8 @@ let UsersService = class UsersService {
             lastName: ('lastName' in data && data.lastName) ? data.lastName : '',
             isActive: ('isActive' in data && data.isActive !== undefined) ? data.isActive : true,
             permissions: data.permissions ?? [],
+            tenantId: tenantId,
+            isSuperAdmin: ('isSuperAdmin' in data && data.isSuperAdmin) ? data.isSuperAdmin : false,
         }));
     }
     async update(id, dto) {

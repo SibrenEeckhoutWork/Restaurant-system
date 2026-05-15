@@ -31,25 +31,26 @@ let OrdersService = class OrdersService {
         this.itemAccRepo = itemAccRepo;
         this.customersService = customersService;
     }
-    findAll() {
+    findAll(tenantId) {
         return this.orderRepo.find({
+            where: { tenantId },
             relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
             order: { createdAt: 'DESC' },
         });
     }
-    async findById(id) {
+    async findById(id, tenantId) {
         const order = await this.orderRepo.findOne({
-            where: { id },
+            where: { id, tenantId },
             relations: { table: true, items: { product: { accessories: true, category: true }, accessories: { accessory: true } } },
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         return order;
     }
-    async create(dto) {
+    async create(dto, tenantId) {
         let customerId = null;
         if (dto.email) {
-            const customer = await this.customersService.findByEmail(dto.email);
+            const customer = await this.customersService.findByEmailInTenant(dto.email, tenantId);
             customerId = customer?.id ?? null;
         }
         const order = await this.orderRepo.save(this.orderRepo.create({
@@ -60,12 +61,13 @@ let OrdersService = class OrdersService {
             address: dto.address ?? null,
             deliveryType: dto.deliveryType ?? null,
             customerId,
+            tenantId,
         }));
         await this.saveItems(order.id, dto.items);
-        return this.findById(order.id);
+        return this.findById(order.id, tenantId);
     }
-    async updateStatus(id, dto) {
-        const order = await this.findById(id);
+    async updateStatus(id, dto, tenantId) {
+        const order = await this.findById(id, tenantId);
         order.status = dto.status;
         await this.orderRepo.save(order);
         const syncStatuses = {
@@ -78,21 +80,21 @@ let OrdersService = class OrdersService {
         if (itemStatus) {
             await this.itemRepo.update({ orderId: id }, { itemStatus });
         }
-        return this.findById(id);
+        return this.findById(id, tenantId);
     }
-    async updateItems(id, dto) {
-        await this.findById(id);
+    async updateItems(id, dto, tenantId) {
+        await this.findById(id, tenantId);
         const existing = await this.itemRepo.find({ where: { orderId: id } });
         await this.itemRepo.remove(existing);
         await this.saveItems(id, dto.items);
-        return this.findById(id);
+        return this.findById(id, tenantId);
     }
-    async remove(id) {
-        const order = await this.findById(id);
+    async remove(id, tenantId) {
+        const order = await this.findById(id, tenantId);
         await this.orderRepo.remove(order);
     }
-    async bulkRemove(ids) {
-        await this.orderRepo.delete({ id: (0, typeorm_2.In)(ids) });
+    async bulkRemove(ids, tenantId) {
+        await this.orderRepo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
     async saveItems(orderId, itemDtos) {
         for (const dto of itemDtos) {
@@ -111,9 +113,9 @@ let OrdersService = class OrdersService {
             }
         }
     }
-    async updateItemStatus(orderId, itemId, status) {
+    async updateItemStatus(orderId, itemId, status, tenantId) {
         await this.itemRepo.update({ id: itemId, orderId }, { itemStatus: status });
-        const order = await this.findById(orderId);
+        const order = await this.findById(orderId, tenantId);
         const statuses = order.items.map((i) => i.itemStatus);
         let next = order.status;
         if (statuses.every((s) => s === 'delivered') && order.status !== order_entity_js_1.OrderStatus.DELIVERED) {
@@ -129,7 +131,7 @@ let OrdersService = class OrdersService {
             order.status = next;
             await this.orderRepo.save(order);
         }
-        return this.findById(orderId);
+        return this.findById(orderId, tenantId);
     }
 };
 exports.OrdersService = OrdersService;

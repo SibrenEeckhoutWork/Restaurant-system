@@ -13,28 +13,28 @@ export declare class ProductsService {
     private readonly categoryRepo;
     private readonly allergyRepo;
     constructor(productRepo: Repository<Product>, categoryRepo: Repository<Category>, allergyRepo: Repository<Allergy>);
-    findAllCategories(): Promise<Category[]>;
-    findCategoryById(id: string): Promise<Category>;
-    createCategory(dto: CreateCategoryDto): Promise<Category>;
-    updateCategory(id: string, dto: UpdateCategoryDto): Promise<Category>;
-    removeCategory(id: string): Promise<void>;
-    bulkRemoveCategories(ids: string[]): Promise<void>;
-    findAllAllergies(): Promise<Allergy[]>;
-    findAllergyById(id: string): Promise<Allergy>;
-    createAllergy(dto: CreateAllergyDto): Promise<Allergy>;
-    updateAllergy(id: string, dto: UpdateAllergyDto): Promise<Allergy>;
-    removeAllergy(id: string): Promise<void>;
-    bulkRemoveAllergies(ids: string[]): Promise<void>;
-    findMenu(): Promise<{
+    findAllCategories(tenantId: string): Promise<Category[]>;
+    findCategoryById(id: string, tenantId: string): Promise<Category>;
+    createCategory(dto: CreateCategoryDto, tenantId: string): Promise<Category>;
+    updateCategory(id: string, dto: UpdateCategoryDto, tenantId: string): Promise<Category>;
+    removeCategory(id: string, tenantId: string): Promise<void>;
+    bulkRemoveCategories(ids: string[], tenantId: string): Promise<void>;
+    findAllAllergies(tenantId: string): Promise<Allergy[]>;
+    findAllergyById(id: string, tenantId: string): Promise<Allergy>;
+    createAllergy(dto: CreateAllergyDto, tenantId: string): Promise<Allergy>;
+    updateAllergy(id: string, dto: UpdateAllergyDto, tenantId: string): Promise<Allergy>;
+    removeAllergy(id: string, tenantId: string): Promise<void>;
+    bulkRemoveAllergies(ids: string[], tenantId: string): Promise<void>;
+    findMenu(tenantId: string): Promise<{
         id: string;
         name: string;
         sortOrder: number;
         products: Product[];
     }[]>;
-    findAllProducts(): Promise<Product[]>;
-    findProductById(id: string): Promise<Product>;
-    createProduct(dto: CreateProductDto): Promise<Product>;
-    updateProduct(id: string, dto: UpdateProductDto): Promise<Product>;
-    removeProduct(id: string): Promise<void>;
-    bulkRemoveProducts(ids: string[]): Promise<void>;
+    findAllProducts(tenantId: string): Promise<Product[]>;
+    findProductById(id: string, tenantId: string): Promise<Product>;
+    createProduct(dto: CreateProductDto, tenantId: string): Promise<Product>;
+    updateProduct(id: string, dto: UpdateProductDto, tenantId: string): Promise<Product>;
+    removeProduct(id: string, tenantId: string): Promise<void>;
+    bulkRemoveProducts(ids: string[], tenantId: string): Promise<void>;
 }

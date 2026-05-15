@@ -7,6 +7,9 @@ export class Table {
   id: string;
 
   @Column()
+  tenantId: string;
+
+  @Column()
   name: string;
 
   @Column('int')

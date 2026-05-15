@@ -20,12 +20,11 @@ export class PermissionGuard implements CanActivate {
 
     if (!required) return true;
 
-    const isRequired = await this.moduleConfigService.isRequired(required);
+    const { user } = context.switchToHttp().getRequest<{ user: JwtPayload }>();
+    const isRequired = await this.moduleConfigService.isRequired(required, user.tenantId);
     if (!isRequired) return true;
 
-    const { user } = context.switchToHttp().getRequest<{ user: JwtPayload }>();
     const dbUser = await this.usersService.findById(user.sub);
-
     if (!dbUser?.permissions.includes(required)) throw new ForbiddenException();
     return true;
   }

@@ -14,7 +14,10 @@ export class Customer {
   @Column()
   name: string;
 
-  @Column({ unique: true })
+  @Column()
+  tenantId: string;
+
+  @Column()
   email: string;
 
   @Column()

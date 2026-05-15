@@ -22,6 +22,7 @@ var ReservationStatus;
 })(ReservationStatus || (exports.ReservationStatus = ReservationStatus = {}));
 let Reservation = class Reservation {
     id;
+    tenantId;
     date;
     customerId;
     customer;
@@ -42,6 +43,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Reservation.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Reservation.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date' }),
     __metadata("design:type", String)

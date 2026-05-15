@@ -18,6 +18,7 @@ import { UpdateRoomDto } from './dto/update-room.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
+import { CurrentTenantId } from '../auth/decorators/current-tenant-id.decorator.js';
 
 @ApiTags('Rooms')
 @ApiBearerAuth()
@@ -28,39 +29,39 @@ export class RoomsController {
 
   @Get()
   @RequirePermission('rooms.get')
-  findAll() {
-    return this.roomsService.findAll();
+  findAll(@CurrentTenantId() tenantId: string) {
+    return this.roomsService.findAll(tenantId);
   }
 
   @Get(':id')
   @RequirePermission('rooms.get')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.roomsService.findById(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.roomsService.findById(id, tenantId);
   }
 
   @Post()
   @RequirePermission('rooms.create')
-  create(@Body() dto: CreateRoomDto) {
-    return this.roomsService.create(dto);
+  create(@Body() dto: CreateRoomDto, @CurrentTenantId() tenantId: string) {
+    return this.roomsService.create(dto, tenantId);
   }
 
   @Patch(':id')
   @RequirePermission('rooms.update')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRoomDto) {
-    return this.roomsService.update(id, dto);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRoomDto, @CurrentTenantId() tenantId: string) {
+    return this.roomsService.update(id, dto, tenantId);
   }
 
   @Delete('bulk')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('rooms.delete')
-  bulkDelete(@Body() body: { ids: string[] }) {
-    return this.roomsService.bulkRemove(body.ids);
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentTenantId() tenantId: string) {
+    return this.roomsService.bulkRemove(body.ids, tenantId);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('rooms.delete')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.roomsService.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.roomsService.remove(id, tenantId);
   }
 }

@@ -28,57 +28,57 @@ let ProductsService = class ProductsService {
         this.categoryRepo = categoryRepo;
         this.allergyRepo = allergyRepo;
     }
-    findAllCategories() {
-        return this.categoryRepo.find({ order: { sortOrder: 'ASC', name: 'ASC' } });
+    findAllCategories(tenantId) {
+        return this.categoryRepo.find({ where: { tenantId }, order: { sortOrder: 'ASC', name: 'ASC' } });
     }
-    async findCategoryById(id) {
-        const c = await this.categoryRepo.findOne({ where: { id } });
+    async findCategoryById(id, tenantId) {
+        const c = await this.categoryRepo.findOne({ where: { id, tenantId } });
         if (!c)
             throw new common_1.NotFoundException('Category not found');
         return c;
     }
-    createCategory(dto) {
-        return this.categoryRepo.save(this.categoryRepo.create({ ...dto, sortOrder: dto.sortOrder ?? 0 }));
+    createCategory(dto, tenantId) {
+        return this.categoryRepo.save(this.categoryRepo.create({ ...dto, tenantId, sortOrder: dto.sortOrder ?? 0 }));
     }
-    async updateCategory(id, dto) {
-        const c = await this.findCategoryById(id);
+    async updateCategory(id, dto, tenantId) {
+        const c = await this.findCategoryById(id, tenantId);
         Object.assign(c, dto);
         return this.categoryRepo.save(c);
     }
-    async removeCategory(id) {
-        const c = await this.findCategoryById(id);
+    async removeCategory(id, tenantId) {
+        const c = await this.findCategoryById(id, tenantId);
         await this.categoryRepo.remove(c);
     }
-    async bulkRemoveCategories(ids) {
-        await this.categoryRepo.delete(ids);
+    async bulkRemoveCategories(ids, tenantId) {
+        await this.categoryRepo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
-    findAllAllergies() {
-        return this.allergyRepo.find({ order: { name: 'ASC' } });
+    findAllAllergies(tenantId) {
+        return this.allergyRepo.find({ where: { tenantId }, order: { name: 'ASC' } });
     }
-    async findAllergyById(id) {
-        const a = await this.allergyRepo.findOne({ where: { id } });
+    async findAllergyById(id, tenantId) {
+        const a = await this.allergyRepo.findOne({ where: { id, tenantId } });
         if (!a)
             throw new common_1.NotFoundException('Allergy not found');
         return a;
     }
-    createAllergy(dto) {
-        return this.allergyRepo.save(this.allergyRepo.create({ ...dto, icon: dto.icon ?? null }));
+    createAllergy(dto, tenantId) {
+        return this.allergyRepo.save(this.allergyRepo.create({ ...dto, tenantId, icon: dto.icon ?? null }));
     }
-    async updateAllergy(id, dto) {
-        const a = await this.findAllergyById(id);
+    async updateAllergy(id, dto, tenantId) {
+        const a = await this.findAllergyById(id, tenantId);
         Object.assign(a, dto);
         return this.allergyRepo.save(a);
     }
-    async removeAllergy(id) {
-        const a = await this.findAllergyById(id);
+    async removeAllergy(id, tenantId) {
+        const a = await this.findAllergyById(id, tenantId);
         await this.allergyRepo.remove(a);
     }
-    async bulkRemoveAllergies(ids) {
-        await this.allergyRepo.delete(ids);
+    async bulkRemoveAllergies(ids, tenantId) {
+        await this.allergyRepo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
-    async findMenu() {
+    async findMenu(tenantId) {
         const products = await this.productRepo.find({
-            where: { isAvailable: true },
+            where: { isAvailable: true, tenantId },
             relations: { category: true, allergies: true, accessories: true },
             order: { name: 'ASC' },
         });
@@ -93,27 +93,28 @@ let ProductsService = class ProductsService {
         }
         return [...map.values()].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
     }
-    findAllProducts() {
+    findAllProducts(tenantId) {
         return this.productRepo.find({
+            where: { tenantId },
             relations: { category: true, allergies: true, accessories: true },
             order: { name: 'ASC' },
         });
     }
-    async findProductById(id) {
+    async findProductById(id, tenantId) {
         const p = await this.productRepo.findOne({
-            where: { id },
+            where: { id, tenantId },
             relations: { category: true, allergies: true, accessories: true },
         });
         if (!p)
             throw new common_1.NotFoundException('Product not found');
         return p;
     }
-    async createProduct(dto) {
+    async createProduct(dto, tenantId) {
         const allergies = dto.allergyIds?.length
-            ? await this.allergyRepo.findBy({ id: (0, typeorm_2.In)(dto.allergyIds) })
+            ? await this.allergyRepo.findBy({ id: (0, typeorm_2.In)(dto.allergyIds), tenantId })
             : [];
         const accessories = dto.accessoryIds?.length
-            ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
+            ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds), tenantId })
             : [];
         const product = this.productRepo.create({
             name: dto.name,
@@ -121,13 +122,14 @@ let ProductsService = class ProductsService {
             price: dto.price,
             isAvailable: dto.isAvailable ?? true,
             categoryId: dto.categoryId,
+            tenantId,
             allergies,
             accessories,
         });
         return this.productRepo.save(product);
     }
-    async updateProduct(id, dto) {
-        const product = await this.findProductById(id);
+    async updateProduct(id, dto, tenantId) {
+        const product = await this.findProductById(id, tenantId);
         if (dto.name !== undefined)
             product.name = dto.name;
         if (dto.description !== undefined)
@@ -140,22 +142,22 @@ let ProductsService = class ProductsService {
             product.categoryId = dto.categoryId;
         if (dto.allergyIds !== undefined) {
             product.allergies = dto.allergyIds.length
-                ? await this.allergyRepo.findBy({ id: (0, typeorm_2.In)(dto.allergyIds) })
+                ? await this.allergyRepo.findBy({ id: (0, typeorm_2.In)(dto.allergyIds), tenantId })
                 : [];
         }
         if (dto.accessoryIds !== undefined) {
             product.accessories = dto.accessoryIds.length
-                ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds) })
+                ? await this.productRepo.findBy({ id: (0, typeorm_2.In)(dto.accessoryIds), tenantId })
                 : [];
         }
         return this.productRepo.save(product);
     }
-    async removeProduct(id) {
-        const product = await this.findProductById(id);
+    async removeProduct(id, tenantId) {
+        const product = await this.findProductById(id, tenantId);
         await this.productRepo.remove(product);
     }
-    async bulkRemoveProducts(ids) {
-        await this.productRepo.delete(ids);
+    async bulkRemoveProducts(ids, tenantId) {
+        await this.productRepo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
 };
 exports.ProductsService = ProductsService;

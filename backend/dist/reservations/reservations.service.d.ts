@@ -16,25 +16,26 @@ export declare class ReservationsService {
     constructor(slotRepo: Repository<ReservationSlot>, reservationRepo: Repository<Reservation>, roomRepo: Repository<Room>, customerRepo: Repository<Customer>);
     private resolveRooms;
     private slotMatchesDate;
-    createSlot(dto: CreateSlotDto): Promise<ReservationSlot>;
-    findSlots(opts?: {
+    createSlot(dto: CreateSlotDto, tenantId: string): Promise<ReservationSlot>;
+    findSlots(tenantId: string, opts?: {
         date?: string;
     }): Promise<ReservationSlot[]>;
-    findSlotById(id: string): Promise<ReservationSlot>;
-    updateSlot(id: string, dto: UpdateSlotDto): Promise<ReservationSlot>;
-    removeSlot(id: string): Promise<void>;
-    getAvailableDatesForMonth(year: number, month: number, partySize: number): Promise<string[]>;
-    getAvailability(date: string, partySize: number): Promise<ReservationSlot[]>;
-    findAll(opts?: {
+    findSlotById(id: string, tenantId: string): Promise<ReservationSlot>;
+    updateSlot(id: string, dto: UpdateSlotDto, tenantId: string): Promise<ReservationSlot>;
+    removeSlot(id: string, tenantId: string): Promise<void>;
+    private getBookedTableIdsForDate;
+    getAvailableDatesForMonth(year: number, month: number, partySize: number, tenantId: string): Promise<string[]>;
+    getAvailability(date: string, partySize: number, tenantId: string): Promise<ReservationSlot[]>;
+    findAll(tenantId: string, opts?: {
         date?: string;
         fromDate?: string;
         toDate?: string;
         status?: ReservationStatus;
     }): Promise<Reservation[]>;
-    findById(id: string): Promise<Reservation>;
-    createReservation(dto: CreateReservationDto): Promise<Reservation>;
-    createPublicReservation(dto: CreatePublicReservationDto): Promise<Reservation>;
-    updateStatus(id: string, dto: UpdateReservationStatusDto): Promise<Reservation>;
-    remove(id: string): Promise<void>;
-    bulkRemove(ids: string[]): Promise<void>;
+    findById(id: string, tenantId: string): Promise<Reservation>;
+    createReservation(dto: CreateReservationDto, tenantId: string): Promise<Reservation>;
+    createPublicReservation(dto: CreatePublicReservationDto, tenantId: string): Promise<Reservation>;
+    updateStatus(id: string, dto: UpdateReservationStatusDto, tenantId: string): Promise<Reservation>;
+    remove(id: string, tenantId: string): Promise<void>;
+    bulkRemove(ids: string[], tenantId: string): Promise<void>;
 }

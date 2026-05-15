@@ -21,6 +21,7 @@ var SlotRecurrence;
 })(SlotRecurrence || (exports.SlotRecurrence = SlotRecurrence = {}));
 let ReservationSlot = class ReservationSlot {
     id;
+    tenantId;
     startTime;
     endTime;
     maxCapacity;
@@ -36,6 +37,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], ReservationSlot.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], ReservationSlot.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'time' }),
     __metadata("design:type", String)

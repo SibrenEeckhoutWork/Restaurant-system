@@ -5,16 +5,20 @@ import { UpdateUserDto } from './dto/update-user.dto.js';
 export declare class UsersService {
     private readonly repo;
     constructor(repo: Repository<User>);
-    findAll(): Promise<User[]>;
+    findAll(tenantId: string): Promise<User[]>;
     findById(id: string): Promise<User | null>;
     findByEmail(email: string): Promise<User | null>;
-    count(): Promise<number>;
+    findByEmailInTenant(email: string, tenantId: string): Promise<User | null>;
+    findSuperAdminByEmail(email: string): Promise<User | null>;
+    count(tenantId?: string): Promise<number>;
     create(data: CreateUserDto | {
         email: string;
         password: string;
         permissions: string[];
         firstName?: string;
         lastName?: string;
+        tenantId?: string | null;
+        isSuperAdmin?: boolean;
     }): Promise<User>;
     update(id: string, dto: UpdateUserDto): Promise<User>;
     remove(id: string): Promise<void>;

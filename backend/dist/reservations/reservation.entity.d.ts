@@ -8,6 +8,7 @@ export declare enum ReservationStatus {
 }
 export declare class Reservation {
     id: string;
+    tenantId: string;
     date: string;
     customerId: string | null;
     customer: Customer | null;

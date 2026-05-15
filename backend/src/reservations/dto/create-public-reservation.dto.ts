@@ -2,6 +2,10 @@ import { IsEmail, IsInt, IsOptional, IsString, IsUUID, Matches, Min } from 'clas
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePublicReservationDto {
+  @ApiProperty()
+  @IsString()
+  tenantSlug: string;
+
   @ApiProperty({ example: '2026-05-09' })
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)

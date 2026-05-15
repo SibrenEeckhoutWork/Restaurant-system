@@ -13,13 +13,16 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { SuperAdminLoginDto } from './dto/super-admin-login.dto.js';
 import { CustomerRegisterDto } from './dto/customer-register.dto.js';
 import { CustomerLoginDto } from './dto/customer-login.dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { JwtCustomerGuard } from './guards/jwt-customer.guard.js';
+import { SuperAdminGuard } from './guards/super-admin.guard.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import type { JwtPayload } from './strategies/jwt-access.strategy.js';
 import type { JwtCustomerPayload } from './strategies/jwt-customer.strategy.js';
+import type { SuperAdminPayload } from './strategies/super-admin.strategy.js';
 import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
@@ -79,6 +82,57 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user' })
   me(@CurrentUser() user: JwtPayload) {
     return this.authService.me(user.sub);
+  }
+
+  // ─── Super Admin endpoints ────────────────────────────────────────────────────
+
+  @Post('super-admin/login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Super admin login' })
+  superAdminLogin(
+    @Body() dto: SuperAdminLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.superAdminLogin(dto, res);
+  }
+
+  @Post('super-admin/refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh super admin access token via cookie' })
+  async superAdminRefresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = (req.cookies as Record<string, string>)?.['sa_refresh_token'];
+    if (!token) return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'No refresh token' });
+
+    const payload = this.authService.verifyRefreshCookie(
+      token,
+      this.config.getOrThrow('SUPER_ADMIN_REFRESH_SECRET'),
+    );
+    if (!payload) return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+
+    return this.authService.superAdminRefresh(payload.sub, token, res);
+  }
+
+  @Get('super-admin/me')
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current super admin' })
+  superAdminMe(@Req() req: Request & { user: SuperAdminPayload }) {
+    return this.authService.superAdminMe(req.user.sub);
+  }
+
+  @Post('super-admin/logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(SuperAdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Super admin logout' })
+  superAdminLogout(
+    @Req() req: Request & { user: SuperAdminPayload },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.superAdminLogout(req.user.sub, res);
   }
 
   // ─── Customer endpoints ───────────────────────────────────────────────────────

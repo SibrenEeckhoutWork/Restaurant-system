@@ -9,6 +9,7 @@ export declare enum OrderStatus {
 }
 export declare class Order {
     id: string;
+    tenantId: string;
     tableId: string | null;
     table: Table | null;
     customerName: string | null;

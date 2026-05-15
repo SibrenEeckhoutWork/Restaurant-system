@@ -23,6 +23,7 @@ var OrderStatus;
 })(OrderStatus || (exports.OrderStatus = OrderStatus = {}));
 let Order = class Order {
     id;
+    tenantId;
     tableId;
     table;
     customerName;
@@ -41,6 +42,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Order.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Order.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'uuid' }),
     __metadata("design:type", Object)

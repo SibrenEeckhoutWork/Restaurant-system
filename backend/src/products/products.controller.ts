@@ -9,6 +9,8 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -22,15 +24,24 @@ import { UpdateAllergyDto } from './dto/update-allergy.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionGuard } from '../auth/guards/permission.guard.js';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator.js';
+import { CurrentTenantId } from '../auth/decorators/current-tenant-id.decorator.js';
+import { TenantsService } from '../tenants/tenants.service.js';
 
 // ── Public menu (no auth) ────────────────────────────────────────────────────
 @ApiTags('Menu')
 @Controller('menu')
 export class MenuController {
-  constructor(private readonly service: ProductsService) {}
+  constructor(
+    private readonly service: ProductsService,
+    private readonly tenantsService: TenantsService,
+  ) {}
 
   @Get()
-  getMenu() { return this.service.findMenu(); }
+  async getMenu(@Query('tenantSlug') tenantSlug: string) {
+    const tenant = await this.tenantsService.findBySlug(tenantSlug);
+    if (!tenant || !tenant.isActive) throw new UnauthorizedException('Tenant not found');
+    return this.service.findMenu(tenant.id);
+  }
 }
 
 // ── Categories ────────────────────────────────────────────────────────────────
@@ -43,31 +54,39 @@ export class CategoriesController {
 
   @Get()
   @RequirePermission('categories.get')
-  findAll() { return this.service.findAllCategories(); }
+  findAll(@CurrentTenantId() tenantId: string) { return this.service.findAllCategories(tenantId); }
 
   @Get(':id')
   @RequirePermission('categories.get')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findCategoryById(id); }
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.findCategoryById(id, tenantId);
+  }
 
   @Post()
   @RequirePermission('categories.create')
-  create(@Body() dto: CreateCategoryDto) { return this.service.createCategory(dto); }
+  create(@Body() dto: CreateCategoryDto, @CurrentTenantId() tenantId: string) {
+    return this.service.createCategory(dto, tenantId);
+  }
 
   @Patch(':id')
   @RequirePermission('categories.update')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCategoryDto) {
-    return this.service.updateCategory(id, dto);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCategoryDto, @CurrentTenantId() tenantId: string) {
+    return this.service.updateCategory(id, dto, tenantId);
   }
 
   @Delete('bulk')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('categories.delete')
-  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveCategories(body.ids); }
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentTenantId() tenantId: string) {
+    return this.service.bulkRemoveCategories(body.ids, tenantId);
+  }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('categories.delete')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.removeCategory(id); }
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.removeCategory(id, tenantId);
+  }
 }
 
 // ── Allergies ─────────────────────────────────────────────────────────────────
@@ -80,31 +99,39 @@ export class AllergiesController {
 
   @Get()
   @RequirePermission('allergies.get')
-  findAll() { return this.service.findAllAllergies(); }
+  findAll(@CurrentTenantId() tenantId: string) { return this.service.findAllAllergies(tenantId); }
 
   @Get(':id')
   @RequirePermission('allergies.get')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findAllergyById(id); }
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.findAllergyById(id, tenantId);
+  }
 
   @Post()
   @RequirePermission('allergies.create')
-  create(@Body() dto: CreateAllergyDto) { return this.service.createAllergy(dto); }
+  create(@Body() dto: CreateAllergyDto, @CurrentTenantId() tenantId: string) {
+    return this.service.createAllergy(dto, tenantId);
+  }
 
   @Patch(':id')
   @RequirePermission('allergies.update')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAllergyDto) {
-    return this.service.updateAllergy(id, dto);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateAllergyDto, @CurrentTenantId() tenantId: string) {
+    return this.service.updateAllergy(id, dto, tenantId);
   }
 
   @Delete('bulk')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('allergies.delete')
-  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveAllergies(body.ids); }
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentTenantId() tenantId: string) {
+    return this.service.bulkRemoveAllergies(body.ids, tenantId);
+  }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('allergies.delete')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.removeAllergy(id); }
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.removeAllergy(id, tenantId);
+  }
 }
 
 // ── Products ──────────────────────────────────────────────────────────────────
@@ -117,29 +144,37 @@ export class ProductsController {
 
   @Get()
   @RequirePermission('products.get')
-  findAll() { return this.service.findAllProducts(); }
+  findAll(@CurrentTenantId() tenantId: string) { return this.service.findAllProducts(tenantId); }
 
   @Get(':id')
   @RequirePermission('products.get')
-  findOne(@Param('id', ParseUUIDPipe) id: string) { return this.service.findProductById(id); }
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.findProductById(id, tenantId);
+  }
 
   @Post()
   @RequirePermission('products.create')
-  create(@Body() dto: CreateProductDto) { return this.service.createProduct(dto); }
+  create(@Body() dto: CreateProductDto, @CurrentTenantId() tenantId: string) {
+    return this.service.createProduct(dto, tenantId);
+  }
 
   @Patch(':id')
   @RequirePermission('products.update')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto) {
-    return this.service.updateProduct(id, dto);
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto, @CurrentTenantId() tenantId: string) {
+    return this.service.updateProduct(id, dto, tenantId);
   }
 
   @Delete('bulk')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('products.delete')
-  bulkDelete(@Body() body: { ids: string[] }) { return this.service.bulkRemoveProducts(body.ids); }
+  bulkDelete(@Body() body: { ids: string[] }, @CurrentTenantId() tenantId: string) {
+    return this.service.bulkRemoveProducts(body.ids, tenantId);
+  }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission('products.delete')
-  remove(@Param('id', ParseUUIDPipe) id: string) { return this.service.removeProduct(id); }
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentTenantId() tenantId: string) {
+    return this.service.removeProduct(id, tenantId);
+  }
 }

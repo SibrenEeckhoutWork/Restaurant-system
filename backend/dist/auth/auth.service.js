@@ -49,27 +49,36 @@ const config_1 = require("@nestjs/config");
 const bcrypt = __importStar(require("bcrypt"));
 const users_service_js_1 = require("../users/users.service.js");
 const customers_service_js_1 = require("../customers/customers.service.js");
+const tenants_service_js_1 = require("../tenants/tenants.service.js");
 const REFRESH_COOKIE = 'refresh_token';
+const SUPER_ADMIN_REFRESH_COOKIE = 'sa_refresh_token';
 const CUSTOMER_REFRESH_COOKIE = 'customer_refresh_token';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 let AuthService = class AuthService {
     usersService;
     customersService;
+    tenantsService;
     jwtService;
     config;
-    constructor(usersService, customersService, jwtService, config) {
+    constructor(usersService, customersService, tenantsService, jwtService, config) {
         this.usersService = usersService;
         this.customersService = customersService;
+        this.tenantsService = tenantsService;
         this.jwtService = jwtService;
         this.config = config;
     }
     async login(dto, res) {
-        const user = await this.usersService.findByEmail(dto.email);
+        const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
+        if (!tenant || !tenant.isActive)
+            throw new common_1.UnauthorizedException('Tenant not found or inactive');
+        const user = await this.usersService.findByEmailInTenant(dto.email, tenant.id);
         if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const valid = await bcrypt.compare(dto.password, user.password);
         if (!valid)
             throw new common_1.UnauthorizedException('Invalid credentials');
+        if (!user.isActive)
+            throw new common_1.UnauthorizedException('Account disabled');
         return this.issueUserTokens(user, res);
     }
     async refresh(userId, incomingToken, res) {
@@ -95,7 +104,7 @@ let AuthService = class AuthService {
         return safe;
     }
     async issueUserTokens(user, res) {
-        const accessToken = this.jwtService.sign({ sub: user.id, email: user.email, type: 'user' }, {
+        const accessToken = this.jwtService.sign({ sub: user.id, email: user.email, type: 'user', tenantId: user.tenantId }, {
             secret: this.config.getOrThrow('JWT_ACCESS_SECRET'),
             expiresIn: this.config.get('JWT_ACCESS_EXPIRES', '15m'),
         });
@@ -114,18 +123,75 @@ let AuthService = class AuthService {
         });
         return { accessToken };
     }
+    async superAdminLogin(dto, res) {
+        const user = await this.usersService.findSuperAdminByEmail(dto.email);
+        if (!user)
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        const valid = await bcrypt.compare(dto.password, user.password);
+        if (!valid)
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        return this.issueSuperAdminTokens(user, res);
+    }
+    async superAdminRefresh(userId, incomingToken, res) {
+        const user = await this.usersService.findById(userId);
+        if (!user?.refreshTokenHash || !user.isSuperAdmin)
+            throw new common_1.UnauthorizedException();
+        const match = await bcrypt.compare(incomingToken, user.refreshTokenHash);
+        if (!match)
+            throw new common_1.UnauthorizedException();
+        return this.issueSuperAdminTokens(user, res);
+    }
+    async superAdminMe(userId) {
+        const user = await this.usersService.findById(userId);
+        if (!user || !user.isSuperAdmin)
+            throw new common_1.UnauthorizedException();
+        const { password, refreshTokenHash, ...safe } = user;
+        void password;
+        void refreshTokenHash;
+        return safe;
+    }
+    async superAdminLogout(userId, res) {
+        await this.usersService.updateRefreshToken(userId, null);
+        res.clearCookie(SUPER_ADMIN_REFRESH_COOKIE);
+    }
+    async issueSuperAdminTokens(user, res) {
+        const accessToken = this.jwtService.sign({ sub: user.id, email: user.email, type: 'super_admin' }, {
+            secret: this.config.getOrThrow('SUPER_ADMIN_JWT_SECRET'),
+            expiresIn: this.config.get('JWT_ACCESS_EXPIRES', '15m'),
+        });
+        const refreshToken = this.jwtService.sign({ sub: user.id, type: 'sa-refresh' }, {
+            secret: this.config.getOrThrow('SUPER_ADMIN_REFRESH_SECRET'),
+            expiresIn: this.config.get('JWT_REFRESH_EXPIRES', '7d'),
+        });
+        const hash = await bcrypt.hash(refreshToken, 10);
+        await this.usersService.updateRefreshToken(user.id, hash);
+        const isProduction = this.config.get('NODE_ENV') === 'production';
+        res.cookie(SUPER_ADMIN_REFRESH_COOKIE, refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'strict',
+            maxAge: COOKIE_MAX_AGE,
+        });
+        return { accessToken };
+    }
     async customerRegister(dto) {
-        const existing = await this.customersService.findByEmail(dto.email);
+        const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
+        if (!tenant || !tenant.isActive)
+            throw new common_1.UnauthorizedException('Tenant not found or inactive');
+        const existing = await this.customersService.findByEmailInTenant(dto.email, tenant.id);
         if (existing)
             throw new common_1.ConflictException('Email already in use');
-        const customer = await this.customersService.create(dto);
+        const customer = await this.customersService.create(dto, tenant.id);
         const { password, refreshTokenHash, ...safe } = customer;
         void password;
         void refreshTokenHash;
         return safe;
     }
     async customerLogin(dto, res) {
-        const customer = await this.customersService.findByEmail(dto.email);
+        const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
+        if (!tenant || !tenant.isActive)
+            throw new common_1.UnauthorizedException('Tenant not found or inactive');
+        const customer = await this.customersService.findByEmailInTenant(dto.email, tenant.id);
         if (!customer)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const valid = await bcrypt.compare(dto.password, customer.password);
@@ -156,7 +222,7 @@ let AuthService = class AuthService {
         return safe;
     }
     async issueCustomerTokens(customer, res) {
-        const accessToken = this.jwtService.sign({ sub: customer.id, email: customer.email, type: 'customer' }, {
+        const accessToken = this.jwtService.sign({ sub: customer.id, email: customer.email, type: 'customer', tenantId: customer.tenantId }, {
             secret: this.config.getOrThrow('JWT_CUSTOMER_ACCESS_SECRET'),
             expiresIn: this.config.get('JWT_ACCESS_EXPIRES', '15m'),
         });
@@ -189,6 +255,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_js_1.UsersService,
         customers_service_js_1.CustomersService,
+        tenants_service_js_1.TenantsService,
         jwt_1.JwtService,
         config_1.ConfigService])
 ], AuthService);

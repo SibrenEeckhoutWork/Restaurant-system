@@ -22,31 +22,44 @@ const update_order_items_dto_js_1 = require("./dto/update-order-items.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
+const tenants_service_js_1 = require("../tenants/tenants.service.js");
 const websocket_gateway_js_1 = require("../websocket/websocket.gateway.js");
 let OrdersController = class OrdersController {
     service;
+    tenantsService;
     gateway;
-    constructor(service, gateway) {
+    constructor(service, tenantsService, gateway) {
         this.service = service;
+        this.tenantsService = tenantsService;
         this.gateway = gateway;
     }
-    findAll() { return this.service.findAll(); }
-    findOne(id) { return this.service.findById(id); }
+    findAll(tenantId) { return this.service.findAll(tenantId); }
+    findOne(id, tenantId) {
+        return this.service.findById(id, tenantId);
+    }
     async create(dto) {
-        const order = await this.service.create(dto);
+        const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
+        if (!tenant || !tenant.isActive)
+            throw new common_1.UnauthorizedException('Tenant not found');
+        const order = await this.service.create(dto, tenant.id);
         this.gateway.emitToRoom('kitchen', 'order:new', order);
         return order;
     }
-    async updateStatus(id, dto) {
-        const order = await this.service.updateStatus(id, dto);
+    async updateStatus(id, dto, tenantId) {
+        const order = await this.service.updateStatus(id, dto, tenantId);
         this.gateway.emitToRoom('kitchen', 'order:updated', order);
         return order;
     }
-    updateItems(id, dto) {
-        return this.service.updateItems(id, dto);
+    updateItems(id, dto, tenantId) {
+        return this.service.updateItems(id, dto, tenantId);
     }
-    bulkDelete(body) { return this.service.bulkRemove(body.ids); }
-    remove(id) { return this.service.remove(id); }
+    bulkDelete(body, tenantId) {
+        return this.service.bulkRemove(body.ids, tenantId);
+    }
+    remove(id, tenantId) {
+        return this.service.remove(id, tenantId);
+    }
 };
 exports.OrdersController = OrdersController;
 __decorate([
@@ -54,8 +67,9 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard, permission_guard_js_1.PermissionGuard),
     (0, require_permission_decorator_js_1.RequirePermission)('orders.read'),
     (0, common_1.Get)(),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
 __decorate([
@@ -64,8 +78,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('orders.read'),
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findOne", null);
 __decorate([
@@ -82,8 +97,9 @@ __decorate([
     (0, common_1.Patch)(':id/status'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_order_status_dto_js_1.UpdateOrderStatusDto]),
+    __metadata("design:paramtypes", [String, update_order_status_dto_js_1.UpdateOrderStatusDto, String]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
@@ -93,8 +109,9 @@ __decorate([
     (0, common_1.Patch)(':id/items'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_order_items_dto_js_1.UpdateOrderItemsDto]),
+    __metadata("design:paramtypes", [String, update_order_items_dto_js_1.UpdateOrderItemsDto, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateItems", null);
 __decorate([
@@ -104,8 +121,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('orders.delete'),
     (0, common_1.Delete)('bulk'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "bulkDelete", null);
 __decorate([
@@ -115,15 +133,17 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('orders.delete'),
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "remove", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, swagger_1.ApiTags)('Orders'),
     (0, common_1.Controller)('orders'),
-    __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_js_1.AppWebSocketGateway))),
+    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => websocket_gateway_js_1.AppWebSocketGateway))),
     __metadata("design:paramtypes", [orders_service_js_1.OrdersService,
+        tenants_service_js_1.TenantsService,
         websocket_gateway_js_1.AppWebSocketGateway])
 ], OrdersController);
 //# sourceMappingURL=orders.controller.js.map

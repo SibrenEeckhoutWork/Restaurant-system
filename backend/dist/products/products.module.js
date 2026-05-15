@@ -15,6 +15,7 @@ const allergy_entity_js_1 = require("./allergy.entity.js");
 const products_service_js_1 = require("./products.service.js");
 const products_controller_js_1 = require("./products.controller.js");
 const users_module_js_1 = require("../users/users.module.js");
+const tenants_module_js_1 = require("../tenants/tenants.module.js");
 const module_config_module_js_1 = require("../module-config/module-config.module.js");
 const menu_seed_service_js_1 = require("../seed/menu-seed.service.js");
 let ProductsModule = class ProductsModule {
@@ -25,6 +26,7 @@ exports.ProductsModule = ProductsModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forFeature([product_entity_js_1.Product, category_entity_js_1.Category, allergy_entity_js_1.Allergy]),
             users_module_js_1.UsersModule,
+            tenants_module_js_1.TenantsModule,
             module_config_module_js_1.ModuleConfigModule,
         ],
         providers: [products_service_js_1.ProductsService, menu_seed_service_js_1.MenuSeedService],

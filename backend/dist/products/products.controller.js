@@ -25,61 +25,83 @@ const update_allergy_dto_js_1 = require("./dto/update-allergy.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
+const tenants_service_js_1 = require("../tenants/tenants.service.js");
 let MenuController = class MenuController {
     service;
-    constructor(service) {
+    tenantsService;
+    constructor(service, tenantsService) {
         this.service = service;
+        this.tenantsService = tenantsService;
     }
-    getMenu() { return this.service.findMenu(); }
+    async getMenu(tenantSlug) {
+        const tenant = await this.tenantsService.findBySlug(tenantSlug);
+        if (!tenant || !tenant.isActive)
+            throw new common_1.UnauthorizedException('Tenant not found');
+        return this.service.findMenu(tenant.id);
+    }
 };
 exports.MenuController = MenuController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('tenantSlug')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
 ], MenuController.prototype, "getMenu", null);
 exports.MenuController = MenuController = __decorate([
     (0, swagger_1.ApiTags)('Menu'),
     (0, common_1.Controller)('menu'),
-    __metadata("design:paramtypes", [products_service_js_1.ProductsService])
+    __metadata("design:paramtypes", [products_service_js_1.ProductsService,
+        tenants_service_js_1.TenantsService])
 ], MenuController);
 let CategoriesController = class CategoriesController {
     service;
     constructor(service) {
         this.service = service;
     }
-    findAll() { return this.service.findAllCategories(); }
-    findOne(id) { return this.service.findCategoryById(id); }
-    create(dto) { return this.service.createCategory(dto); }
-    update(id, dto) {
-        return this.service.updateCategory(id, dto);
+    findAll(tenantId) { return this.service.findAllCategories(tenantId); }
+    findOne(id, tenantId) {
+        return this.service.findCategoryById(id, tenantId);
     }
-    bulkDelete(body) { return this.service.bulkRemoveCategories(body.ids); }
-    remove(id) { return this.service.removeCategory(id); }
+    create(dto, tenantId) {
+        return this.service.createCategory(dto, tenantId);
+    }
+    update(id, dto, tenantId) {
+        return this.service.updateCategory(id, dto, tenantId);
+    }
+    bulkDelete(body, tenantId) {
+        return this.service.bulkRemoveCategories(body.ids, tenantId);
+    }
+    remove(id, tenantId) {
+        return this.service.removeCategory(id, tenantId);
+    }
 };
 exports.CategoriesController = CategoriesController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.get'),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.get'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_category_dto_js_1.CreateCategoryDto]),
+    __metadata("design:paramtypes", [create_category_dto_js_1.CreateCategoryDto, String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "create", null);
 __decorate([
@@ -87,8 +109,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('categories.update'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_category_dto_js_1.UpdateCategoryDto]),
+    __metadata("design:paramtypes", [String, update_category_dto_js_1.UpdateCategoryDto, String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "update", null);
 __decorate([
@@ -96,8 +119,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.delete'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "bulkDelete", null);
 __decorate([
@@ -105,8 +129,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('categories.delete'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], CategoriesController.prototype, "remove", null);
 exports.CategoriesController = CategoriesController = __decorate([
@@ -121,37 +146,48 @@ let AllergiesController = class AllergiesController {
     constructor(service) {
         this.service = service;
     }
-    findAll() { return this.service.findAllAllergies(); }
-    findOne(id) { return this.service.findAllergyById(id); }
-    create(dto) { return this.service.createAllergy(dto); }
-    update(id, dto) {
-        return this.service.updateAllergy(id, dto);
+    findAll(tenantId) { return this.service.findAllAllergies(tenantId); }
+    findOne(id, tenantId) {
+        return this.service.findAllergyById(id, tenantId);
     }
-    bulkDelete(body) { return this.service.bulkRemoveAllergies(body.ids); }
-    remove(id) { return this.service.removeAllergy(id); }
+    create(dto, tenantId) {
+        return this.service.createAllergy(dto, tenantId);
+    }
+    update(id, dto, tenantId) {
+        return this.service.updateAllergy(id, dto, tenantId);
+    }
+    bulkDelete(body, tenantId) {
+        return this.service.bulkRemoveAllergies(body.ids, tenantId);
+    }
+    remove(id, tenantId) {
+        return this.service.removeAllergy(id, tenantId);
+    }
 };
 exports.AllergiesController = AllergiesController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.get'),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.get'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_allergy_dto_js_1.CreateAllergyDto]),
+    __metadata("design:paramtypes", [create_allergy_dto_js_1.CreateAllergyDto, String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "create", null);
 __decorate([
@@ -159,8 +195,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.update'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_allergy_dto_js_1.UpdateAllergyDto]),
+    __metadata("design:paramtypes", [String, update_allergy_dto_js_1.UpdateAllergyDto, String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "update", null);
 __decorate([
@@ -168,8 +205,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.delete'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "bulkDelete", null);
 __decorate([
@@ -177,8 +215,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('allergies.delete'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], AllergiesController.prototype, "remove", null);
 exports.AllergiesController = AllergiesController = __decorate([
@@ -193,37 +232,48 @@ let ProductsController = class ProductsController {
     constructor(service) {
         this.service = service;
     }
-    findAll() { return this.service.findAllProducts(); }
-    findOne(id) { return this.service.findProductById(id); }
-    create(dto) { return this.service.createProduct(dto); }
-    update(id, dto) {
-        return this.service.updateProduct(id, dto);
+    findAll(tenantId) { return this.service.findAllProducts(tenantId); }
+    findOne(id, tenantId) {
+        return this.service.findProductById(id, tenantId);
     }
-    bulkDelete(body) { return this.service.bulkRemoveProducts(body.ids); }
-    remove(id) { return this.service.removeProduct(id); }
+    create(dto, tenantId) {
+        return this.service.createProduct(dto, tenantId);
+    }
+    update(id, dto, tenantId) {
+        return this.service.updateProduct(id, dto, tenantId);
+    }
+    bulkDelete(body, tenantId) {
+        return this.service.bulkRemoveProducts(body.ids, tenantId);
+    }
+    remove(id, tenantId) {
+        return this.service.removeProduct(id, tenantId);
+    }
 };
 exports.ProductsController = ProductsController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('products.get'),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permission_decorator_js_1.RequirePermission)('products.get'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('products.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_product_dto_js_1.CreateProductDto]),
+    __metadata("design:paramtypes", [create_product_dto_js_1.CreateProductDto, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "create", null);
 __decorate([
@@ -231,8 +281,9 @@ __decorate([
     (0, require_permission_decorator_js_1.RequirePermission)('products.update'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_product_dto_js_1.UpdateProductDto]),
+    __metadata("design:paramtypes", [String, update_product_dto_js_1.UpdateProductDto, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "update", null);
 __decorate([
@@ -240,8 +291,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('products.delete'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "bulkDelete", null);
 __decorate([
@@ -249,8 +301,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     (0, require_permission_decorator_js_1.RequirePermission)('products.delete'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "remove", null);
 exports.ProductsController = ProductsController = __decorate([

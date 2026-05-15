@@ -6,6 +6,9 @@ import { Type } from 'class-transformer';
 import { CreateOrderItemDto } from './create-order-item.dto.js';
 
 export class CreateOrderDto {
+  @IsString()
+  tenantSlug: string;
+
   @IsOptional()
   @IsUUID()
   tableId?: string;

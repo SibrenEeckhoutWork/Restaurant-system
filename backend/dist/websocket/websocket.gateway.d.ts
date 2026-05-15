@@ -18,9 +18,11 @@ export declare class AppWebSocketGateway implements OnGatewayConnection {
         orderId: string;
         itemId: string;
         status: 'pending' | 'preparing' | 'ready' | 'delivered';
+        tenantId: string;
     }): Promise<void>;
     handleOrderStatus(data: {
         orderId: string;
         status: OrderStatus;
+        tenantId: string;
     }): Promise<void>;
 }

@@ -159,11 +159,13 @@ export default function ReserverenPage() {
     }
   }, []);
 
-  // Initial load + whenever partySize changes
+  const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
+
+  // Initial load + whenever partySize changes or calendar is explicitly refreshed
   useEffect(() => {
     const now = new Date();
     fetchAvailableDates(now.getFullYear(), now.getMonth(), partySize);
-  }, [partySize, fetchAvailableDates]);
+  }, [partySize, fetchAvailableDates, calendarRefreshKey]);
 
   function handleMonthChange(year: number, month: number) {
     setDate('');
@@ -228,6 +230,7 @@ export default function ReserverenPage() {
         throw new Error(msg);
       }
       setStep('done');
+      setCalendarRefreshKey((k) => k + 1);
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : 'Er ging iets mis.');
     } finally {
@@ -431,6 +434,7 @@ export default function ReserverenPage() {
                 <button className="btn btn--primary" onClick={() => {
                   setStep('date'); setDate(''); setPartySize(2); setSlots([]);
                   setSelectedSlot(null); setName(''); setEmail(''); setPhone(''); setNotes('');
+                  setCalendarRefreshKey((k) => k + 1);
                 }}>
                   Nieuwe reservatie
                 </button>

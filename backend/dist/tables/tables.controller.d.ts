@@ -4,12 +4,12 @@ import { UpdateTableDto } from './dto/update-table.dto.js';
 export declare class TablesController {
     private readonly tablesService;
     constructor(tablesService: TablesService);
-    findAll(roomId?: string): Promise<import("./table.entity.js").Table[]>;
-    findOne(id: string): Promise<import("./table.entity.js").Table>;
-    create(dto: CreateTableDto): Promise<import("./table.entity.js").Table>;
-    update(id: string, dto: UpdateTableDto): Promise<import("./table.entity.js").Table>;
+    findAll(tenantId: string, roomId?: string): Promise<import("./table.entity.js").Table[]>;
+    findOne(id: string, tenantId: string): Promise<import("./table.entity.js").Table>;
+    create(dto: CreateTableDto, tenantId: string): Promise<import("./table.entity.js").Table>;
+    update(id: string, dto: UpdateTableDto, tenantId: string): Promise<import("./table.entity.js").Table>;
     bulkDelete(body: {
         ids: string[];
-    }): Promise<void>;
-    remove(id: string): Promise<void>;
+    }, tenantId: string): Promise<void>;
+    remove(id: string, tenantId: string): Promise<void>;
 }

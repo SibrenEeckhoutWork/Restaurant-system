@@ -10,21 +10,21 @@ export class ModuleConfigService {
     private readonly repo: Repository<ModuleConfig>,
   ) {}
 
-  getAll(): Promise<ModuleConfig[]> {
-    return this.repo.find();
+  getAll(tenantId: string): Promise<ModuleConfig[]> {
+    return this.repo.find({ where: { tenantId } });
   }
 
-  async isRequired(permission: string): Promise<boolean> {
-    const config = await this.repo.findOne({ where: { permission } });
+  async isRequired(permission: string, tenantId: string): Promise<boolean> {
+    const config = await this.repo.findOne({ where: { permission, tenantId } });
     return config === null ? true : config.required;
   }
 
-  async setRequired(permission: string, required: boolean): Promise<ModuleConfig> {
-    const existing = await this.repo.findOne({ where: { permission } });
+  async setRequired(permission: string, required: boolean, tenantId: string): Promise<ModuleConfig> {
+    const existing = await this.repo.findOne({ where: { permission, tenantId } });
     if (existing) {
       existing.required = required;
       return this.repo.save(existing);
     }
-    return this.repo.save(this.repo.create({ permission, required }));
+    return this.repo.save(this.repo.create({ permission, required, tenantId }));
   }
 }

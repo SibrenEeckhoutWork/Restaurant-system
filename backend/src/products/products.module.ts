@@ -11,6 +11,7 @@ import {
   MenuController,
 } from './products.controller.js';
 import { UsersModule } from '../users/users.module.js';
+import { TenantsModule } from '../tenants/tenants.module.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
 import { MenuSeedService } from '../seed/menu-seed.service.js';
 
@@ -18,6 +19,7 @@ import { MenuSeedService } from '../seed/menu-seed.service.js';
   imports: [
     TypeOrmModule.forFeature([Product, Category, Allergy]),
     UsersModule,
+    TenantsModule,
     ModuleConfigModule,
   ],
   providers: [ProductsService, MenuSeedService],

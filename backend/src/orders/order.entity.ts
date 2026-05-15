@@ -24,6 +24,9 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  tenantId: string;
+
   @Column({ nullable: true, type: 'uuid' })
   tableId: string | null;
 

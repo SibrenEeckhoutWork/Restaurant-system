@@ -13,6 +13,7 @@ exports.Allergy = void 0;
 const typeorm_1 = require("typeorm");
 let Allergy = class Allergy {
     id;
+    tenantId;
     name;
     icon;
 };
@@ -21,6 +22,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Allergy.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Allergy.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)

@@ -30,10 +30,10 @@ let PermissionGuard = class PermissionGuard {
         ]);
         if (!required)
             return true;
-        const isRequired = await this.moduleConfigService.isRequired(required);
+        const { user } = context.switchToHttp().getRequest();
+        const isRequired = await this.moduleConfigService.isRequired(required, user.tenantId);
         if (!isRequired)
             return true;
-        const { user } = context.switchToHttp().getRequest();
         const dbUser = await this.usersService.findById(user.sub);
         if (!dbUser?.permissions.includes(required))
             throw new common_1.ForbiddenException();

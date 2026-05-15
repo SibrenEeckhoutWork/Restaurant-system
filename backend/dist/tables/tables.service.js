@@ -22,33 +22,33 @@ let TablesService = class TablesService {
     constructor(repo) {
         this.repo = repo;
     }
-    findAll(roomId) {
+    findAll(tenantId, roomId) {
         return this.repo.find({
-            where: roomId ? { roomId } : undefined,
+            where: roomId ? { tenantId, roomId } : { tenantId },
             relations: ['room'],
             order: { name: 'ASC' },
         });
     }
-    async findById(id) {
-        const table = await this.repo.findOne({ where: { id }, relations: ['room'] });
+    async findById(id, tenantId) {
+        const table = await this.repo.findOne({ where: { id, tenantId }, relations: ['room'] });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
         return table;
     }
-    create(dto) {
-        return this.repo.save(this.repo.create(dto));
+    create(dto, tenantId) {
+        return this.repo.save(this.repo.create({ ...dto, tenantId }));
     }
-    async update(id, dto) {
-        const table = await this.findById(id);
+    async update(id, dto, tenantId) {
+        const table = await this.findById(id, tenantId);
         Object.assign(table, dto);
         return this.repo.save(table);
     }
-    async remove(id) {
-        const table = await this.findById(id);
+    async remove(id, tenantId) {
+        const table = await this.findById(id, tenantId);
         await this.repo.remove(table);
     }
-    async bulkRemove(ids) {
-        await this.repo.delete({ id: (0, typeorm_2.In)(ids) });
+    async bulkRemove(ids, tenantId) {
+        await this.repo.delete({ id: (0, typeorm_2.In)(ids), tenantId });
     }
 };
 exports.TablesService = TablesService;

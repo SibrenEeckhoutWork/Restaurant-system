@@ -12,13 +12,13 @@ export declare class OrdersService {
     private readonly itemAccRepo;
     private readonly customersService;
     constructor(orderRepo: Repository<Order>, itemRepo: Repository<OrderItem>, itemAccRepo: Repository<OrderItemAccessory>, customersService: CustomersService);
-    findAll(): Promise<Order[]>;
-    findById(id: string): Promise<Order>;
-    create(dto: CreateOrderDto): Promise<Order>;
-    updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<Order>;
-    updateItems(id: string, dto: UpdateOrderItemsDto): Promise<Order>;
-    remove(id: string): Promise<void>;
-    bulkRemove(ids: string[]): Promise<void>;
+    findAll(tenantId: string): Promise<Order[]>;
+    findById(id: string, tenantId: string): Promise<Order>;
+    create(dto: CreateOrderDto, tenantId: string): Promise<Order>;
+    updateStatus(id: string, dto: UpdateOrderStatusDto, tenantId: string): Promise<Order>;
+    updateItems(id: string, dto: UpdateOrderItemsDto, tenantId: string): Promise<Order>;
+    remove(id: string, tenantId: string): Promise<void>;
+    bulkRemove(ids: string[], tenantId: string): Promise<void>;
     private saveItems;
-    updateItemStatus(orderId: string, itemId: string, status: 'pending' | 'preparing' | 'ready' | 'delivered'): Promise<Order>;
+    updateItemStatus(orderId: string, itemId: string, status: 'pending' | 'preparing' | 'ready' | 'delivered', tenantId: string): Promise<Order>;
 }

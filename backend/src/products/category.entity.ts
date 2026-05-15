@@ -6,6 +6,9 @@ export class Category {
   id: string;
 
   @Column()
+  tenantId: string;
+
+  @Column()
   name: string;
 
   @Column({ default: 0 })

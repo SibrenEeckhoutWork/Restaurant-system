@@ -21,19 +21,20 @@ const update_customer_dto_js_1 = require("./dto/update-customer.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
 let CustomersController = class CustomersController {
     customersService;
     constructor(customersService) {
         this.customersService = customersService;
     }
-    findAll() {
-        return this.customersService.findAll();
+    findAll(tenantId) {
+        return this.customersService.findAll(tenantId);
     }
     findOne(id) {
         return this.customersService.findById(id);
     }
-    create(dto) {
-        return this.customersService.create(dto);
+    create(dto, tenantId) {
+        return this.customersService.create(dto, tenantId);
     }
     update(id, dto) {
         return this.customersService.update(id, dto);
@@ -49,8 +50,9 @@ exports.CustomersController = CustomersController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('customers.read'),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], CustomersController.prototype, "findAll", null);
 __decorate([
@@ -65,8 +67,9 @@ __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('customers.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_customer_dto_js_1.CreateCustomerDto]),
+    __metadata("design:paramtypes", [create_customer_dto_js_1.CreateCustomerDto, String]),
     __metadata("design:returntype", void 0)
 ], CustomersController.prototype, "create", null);
 __decorate([

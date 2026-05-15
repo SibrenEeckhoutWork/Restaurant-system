@@ -14,6 +14,7 @@ const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const create_order_item_dto_js_1 = require("./create-order-item.dto.js");
 class CreateOrderDto {
+    tenantSlug;
     tableId;
     customerName;
     email;
@@ -24,6 +25,10 @@ class CreateOrderDto {
     items;
 }
 exports.CreateOrderDto = CreateOrderDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateOrderDto.prototype, "tenantSlug", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),

@@ -12,23 +12,27 @@ export class CustomersService {
     @InjectRepository(Customer) private readonly repo: Repository<Customer>,
   ) {}
 
-  findAll(): Promise<Customer[]> {
-    return this.repo.find({ order: { createdAt: 'DESC' } });
+  findAll(tenantId: string): Promise<Customer[]> {
+    return this.repo.find({ where: { tenantId }, order: { createdAt: 'DESC' } });
   }
 
   findByEmail(email: string): Promise<Customer | null> {
     return this.repo.findOne({ where: { email } });
   }
 
+  findByEmailInTenant(email: string, tenantId: string): Promise<Customer | null> {
+    return this.repo.findOne({ where: { email, tenantId } });
+  }
+
   findById(id: string): Promise<Customer | null> {
     return this.repo.findOne({ where: { id } });
   }
 
-  async create(data: CreateCustomerDto | { name: string; email: string; password: string }): Promise<Customer> {
-    const existing = await this.findByEmail(data.email);
+  async create(data: CreateCustomerDto | { name: string; email: string; password: string }, tenantId: string): Promise<Customer> {
+    const existing = await this.findByEmailInTenant(data.email, tenantId);
     if (existing) throw new ConflictException('Email already in use');
     const password = await bcrypt.hash(data.password, 10);
-    return this.repo.save(this.repo.create({ ...data, password }));
+    return this.repo.save(this.repo.create({ ...data, password, tenantId }));
   }
 
   async update(id: string, dto: UpdateCustomerDto): Promise<Customer> {

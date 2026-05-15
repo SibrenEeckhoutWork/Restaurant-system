@@ -7,6 +7,7 @@ export interface JwtCustomerPayload {
   sub: string;
   email: string;
   type: 'customer';
+  tenantId: string;
 }
 
 @Injectable()

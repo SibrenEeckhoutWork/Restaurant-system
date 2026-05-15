@@ -20,6 +20,9 @@ export class ReservationSlot {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  tenantId: string;
+
   @Column({ type: 'time' })
   startTime: string;
 

@@ -4,6 +4,7 @@ export interface JwtCustomerPayload {
     sub: string;
     email: string;
     type: 'customer';
+    tenantId: string;
 }
 declare const JwtCustomerStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
     validate(...args: any[]): unknown;

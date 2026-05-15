@@ -15,6 +15,7 @@ const order_item_accessory_entity_js_1 = require("./order-item-accessory.entity.
 const orders_service_js_1 = require("./orders.service.js");
 const orders_controller_js_1 = require("./orders.controller.js");
 const users_module_js_1 = require("../users/users.module.js");
+const tenants_module_js_1 = require("../tenants/tenants.module.js");
 const module_config_module_js_1 = require("../module-config/module-config.module.js");
 const websocket_module_js_1 = require("../websocket/websocket.module.js");
 const customers_module_js_1 = require("../customers/customers.module.js");
@@ -27,6 +28,7 @@ exports.OrdersModule = OrdersModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([order_entity_js_1.Order, order_item_entity_js_1.OrderItem, order_item_accessory_entity_js_1.OrderItemAccessory]),
             (0, common_1.forwardRef)(() => websocket_module_js_1.WebSocketModule),
             users_module_js_1.UsersModule,
+            tenants_module_js_1.TenantsModule,
             module_config_module_js_1.ModuleConfigModule,
             customers_module_js_1.CustomersModule,
         ],

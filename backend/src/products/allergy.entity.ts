@@ -6,6 +6,9 @@ export class Allergy {
   id: string;
 
   @Column()
+  tenantId: string;
+
+  @Column()
   name: string;
 
   @Column({ nullable: true, type: 'text' })

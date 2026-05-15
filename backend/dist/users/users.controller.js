@@ -21,19 +21,20 @@ const update_user_dto_js_1 = require("./dto/update-user.dto.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const permission_guard_js_1 = require("../auth/guards/permission.guard.js");
 const require_permission_decorator_js_1 = require("../auth/decorators/require-permission.decorator.js");
+const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
     }
-    findAll() {
-        return this.usersService.findAll();
+    findAll(tenantId) {
+        return this.usersService.findAll(tenantId);
     }
     findOne(id) {
         return this.usersService.findById(id);
     }
-    create(dto) {
-        return this.usersService.create(dto);
+    create(dto, tenantId) {
+        return this.usersService.create({ ...dto, tenantId });
     }
     update(id, dto) {
         return this.usersService.update(id, dto);
@@ -49,8 +50,9 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Get)(),
     (0, require_permission_decorator_js_1.RequirePermission)('users.read'),
+    __param(0, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([
@@ -65,8 +67,9 @@ __decorate([
     (0, common_1.Post)(),
     (0, require_permission_decorator_js_1.RequirePermission)('users.create'),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_user_dto_js_1.CreateUserDto]),
+    __metadata("design:paramtypes", [create_user_dto_js_1.CreateUserDto, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "create", null);
 __decorate([

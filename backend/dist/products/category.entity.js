@@ -13,6 +13,7 @@ exports.Category = void 0;
 const typeorm_1 = require("typeorm");
 let Category = class Category {
     id;
+    tenantId;
     name;
     sortOrder;
 };
@@ -21,6 +22,10 @@ __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Category.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Category.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)

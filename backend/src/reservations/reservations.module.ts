@@ -7,12 +7,14 @@ import { ReservationsController } from './reservations.controller.js';
 import { Room } from '../rooms/room.entity.js';
 import { Customer } from '../customers/customer.entity.js';
 import { UsersModule } from '../users/users.module.js';
+import { TenantsModule } from '../tenants/tenants.module.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ReservationSlot, Reservation, Room, Customer]),
     UsersModule,
+    TenantsModule,
     ModuleConfigModule,
   ],
   providers: [ReservationsService],

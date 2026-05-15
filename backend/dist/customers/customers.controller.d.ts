@@ -4,9 +4,9 @@ import { UpdateCustomerDto } from './dto/update-customer.dto.js';
 export declare class CustomersController {
     private readonly customersService;
     constructor(customersService: CustomersService);
-    findAll(): Promise<import("./customer.entity.js").Customer[]>;
+    findAll(tenantId: string): Promise<import("./customer.entity.js").Customer[]>;
     findOne(id: string): Promise<import("./customer.entity.js").Customer | null>;
-    create(dto: CreateCustomerDto): Promise<import("./customer.entity.js").Customer>;
+    create(dto: CreateCustomerDto, tenantId: string): Promise<import("./customer.entity.js").Customer>;
     update(id: string, dto: UpdateCustomerDto): Promise<import("./customer.entity.js").Customer>;
     bulkDelete(body: {
         ids: string[];

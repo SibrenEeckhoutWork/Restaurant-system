@@ -1,4 +1,5 @@
 export declare class CreatePublicReservationDto {
+    tenantSlug: string;
     date: string;
     slotId: string;
     partySize: number;

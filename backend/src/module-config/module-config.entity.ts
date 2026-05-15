@@ -1,8 +1,15 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 @Entity('module_configs')
+@Unique(['tenantId', 'permission'])
 export class ModuleConfig {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  tenantId: string;
+
+  @Column()
   permission: string;
 
   @Column({ default: true })

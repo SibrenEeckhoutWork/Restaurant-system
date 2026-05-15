@@ -22,20 +22,20 @@ let ModuleConfigService = class ModuleConfigService {
     constructor(repo) {
         this.repo = repo;
     }
-    getAll() {
-        return this.repo.find();
+    getAll(tenantId) {
+        return this.repo.find({ where: { tenantId } });
     }
-    async isRequired(permission) {
-        const config = await this.repo.findOne({ where: { permission } });
+    async isRequired(permission, tenantId) {
+        const config = await this.repo.findOne({ where: { permission, tenantId } });
         return config === null ? true : config.required;
     }
-    async setRequired(permission, required) {
-        const existing = await this.repo.findOne({ where: { permission } });
+    async setRequired(permission, required, tenantId) {
+        const existing = await this.repo.findOne({ where: { permission, tenantId } });
         if (existing) {
             existing.required = required;
             return this.repo.save(existing);
         }
-        return this.repo.save(this.repo.create({ permission, required }));
+        return this.repo.save(this.repo.create({ permission, required, tenantId }));
     }
 };
 exports.ModuleConfigService = ModuleConfigService;

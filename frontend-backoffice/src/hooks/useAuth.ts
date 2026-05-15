@@ -33,10 +33,11 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG;
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, tenantSlug }),
       credentials: 'include',
     });
 

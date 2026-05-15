@@ -16,6 +16,7 @@ const reservations_controller_js_1 = require("./reservations.controller.js");
 const room_entity_js_1 = require("../rooms/room.entity.js");
 const customer_entity_js_1 = require("../customers/customer.entity.js");
 const users_module_js_1 = require("../users/users.module.js");
+const tenants_module_js_1 = require("../tenants/tenants.module.js");
 const module_config_module_js_1 = require("../module-config/module-config.module.js");
 let ReservationsModule = class ReservationsModule {
 };
@@ -25,6 +26,7 @@ exports.ReservationsModule = ReservationsModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forFeature([reservation_slot_entity_js_1.ReservationSlot, reservation_entity_js_1.Reservation, room_entity_js_1.Room, customer_entity_js_1.Customer]),
             users_module_js_1.UsersModule,
+            tenants_module_js_1.TenantsModule,
             module_config_module_js_1.ModuleConfigModule,
         ],
         providers: [reservations_service_js_1.ReservationsService],

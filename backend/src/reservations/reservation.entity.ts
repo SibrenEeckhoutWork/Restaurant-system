@@ -21,6 +21,9 @@ export class Reservation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  tenantId: string;
+
   @Column({ type: 'date' })
   date: string;
 
