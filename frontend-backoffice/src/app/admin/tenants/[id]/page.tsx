@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { tenantsAdminService, type Tenant, type ModuleConfig } from '@/services/admin/tenants.service';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,13 @@ const MODULE_GROUPS: { label: string; permissions: string[] }[] = [
   { label: 'Gebruikers', permissions: ['users.read', 'users.create', 'users.update', 'users.delete'] },
   { label: 'Zalen & Tafels', permissions: ['rooms.get', 'rooms.create', 'rooms.update', 'rooms.delete', 'tables.get', 'tables.create', 'tables.update', 'tables.delete'] },
   { label: 'Bestellingen', permissions: ['orders.read', 'orders.create', 'orders.update', 'orders.delete'] },
-  { label: 'Reservaties', permissions: ['reservations.read', 'reservations.create', 'reservations.update', 'reservations.delete'] },
+  { label: 'Reservaties', permissions: ['reservations.get', 'reservations.create', 'reservations.update', 'reservations.delete'] },
   { label: 'Menu', permissions: ['menu.read', 'menu.create', 'menu.update', 'menu.delete'] },
   { label: 'Klanten', permissions: ['customers.read', 'customers.create', 'customers.update', 'customers.delete'] },
+  { label: 'Producten', permissions: ['products.get', 'products.create', 'products.update', 'products.delete'] },
+  { label: 'Categorieën', permissions: ['categories.get', 'categories.create', 'categories.update', 'categories.delete'] },
+  { label: 'Allergenen', permissions: ['allergies.get', 'allergies.create', 'allergies.update', 'allergies.delete'] },
+  { label: 'Permissies', permissions: ['permissions.manage'] },
 ];
 
 export default function TenantDetailPage() {
@@ -65,7 +69,7 @@ export default function TenantDetailPage() {
     });
   }
 
-  async function handleSave(e: FormEvent) {
+  async function handleSave(e: { preventDefault(): void }) {
     e.preventDefault();
     setSaveError('');
     setSaving(true);

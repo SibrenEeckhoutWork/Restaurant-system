@@ -16,17 +16,25 @@ exports.ModuleConfigController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const module_config_service_js_1 = require("./module-config.service.js");
+const users_service_js_1 = require("../users/users.service.js");
 const jwt_auth_guard_js_1 = require("../auth/guards/jwt-auth.guard.js");
 const current_tenant_id_decorator_js_1 = require("../auth/decorators/current-tenant-id.decorator.js");
 let ModuleConfigController = class ModuleConfigController {
     service;
-    constructor(service) {
+    usersService;
+    constructor(service, usersService) {
         this.service = service;
+        this.usersService = usersService;
     }
     getAll(tenantId) {
         return this.service.getAll(tenantId);
     }
-    update(permission, body, tenantId) {
+    async update(permission, body, tenantId, req) {
+        const user = await this.usersService.findById(req.user.sub);
+        if (!user?.permissions.includes('permissions.manage'))
+            throw new common_1.ForbiddenException();
+        if (!user.permissions.includes(permission))
+            throw new common_1.ForbiddenException();
         return this.service.setRequired(permission, body.required, tenantId);
     }
 };
@@ -43,15 +51,17 @@ __decorate([
     __param(0, (0, common_1.Param)('permission')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, current_tenant_id_decorator_js_1.CurrentTenantId)()),
+    __param(3, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object, String, Object]),
+    __metadata("design:returntype", Promise)
 ], ModuleConfigController.prototype, "update", null);
 exports.ModuleConfigController = ModuleConfigController = __decorate([
     (0, swagger_1.ApiTags)('ModuleConfig'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_js_1.JwtAuthGuard),
     (0, common_1.Controller)('module-config'),
-    __metadata("design:paramtypes", [module_config_service_js_1.ModuleConfigService])
+    __metadata("design:paramtypes", [module_config_service_js_1.ModuleConfigService,
+        users_service_js_1.UsersService])
 ], ModuleConfigController);
 //# sourceMappingURL=module-config.controller.js.map

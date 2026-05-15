@@ -12,12 +12,13 @@ const typeorm_1 = require("@nestjs/typeorm");
 const module_config_entity_js_1 = require("./module-config.entity.js");
 const module_config_service_js_1 = require("./module-config.service.js");
 const module_config_controller_js_1 = require("./module-config.controller.js");
+const users_module_js_1 = require("../users/users.module.js");
 let ModuleConfigModule = class ModuleConfigModule {
 };
 exports.ModuleConfigModule = ModuleConfigModule;
 exports.ModuleConfigModule = ModuleConfigModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([module_config_entity_js_1.ModuleConfig])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([module_config_entity_js_1.ModuleConfig]), (0, common_1.forwardRef)(() => users_module_js_1.UsersModule)],
         providers: [module_config_service_js_1.ModuleConfigService],
         controllers: [module_config_controller_js_1.ModuleConfigController],
         exports: [module_config_service_js_1.ModuleConfigService],
