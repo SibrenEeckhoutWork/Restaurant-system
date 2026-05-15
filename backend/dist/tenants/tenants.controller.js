@@ -19,17 +19,49 @@ const create_tenant_dto_js_1 = require("./dto/create-tenant.dto.js");
 const update_tenant_dto_js_1 = require("./dto/update-tenant.dto.js");
 const super_admin_guard_js_1 = require("../auth/guards/super-admin.guard.js");
 const module_config_service_js_1 = require("../module-config/module-config.service.js");
+const users_service_js_1 = require("../users/users.service.js");
 let TenantsController = class TenantsController {
     svc;
     moduleConfigSvc;
-    constructor(svc, moduleConfigSvc) {
+    usersSvc;
+    constructor(svc, moduleConfigSvc, usersSvc) {
         this.svc = svc;
         this.moduleConfigSvc = moduleConfigSvc;
+        this.usersSvc = usersSvc;
+    }
+    async getPublicBySlug(slug) {
+        const t = await this.svc.findBySlug(slug);
+        if (!t)
+            throw new common_1.NotFoundException('Tenant not found');
+        return { id: t.id, name: t.name, slug: t.slug, isActive: t.isActive };
+    }
+    async getPublicById(id) {
+        const t = await this.svc.findById(id).catch(() => null);
+        if (!t)
+            throw new common_1.NotFoundException('Tenant not found');
+        return { id: t.id, name: t.name, slug: t.slug, isActive: t.isActive };
     }
     findAll() { return this.svc.findAll(); }
     count() { return this.svc.count(); }
     findOne(id) { return this.svc.findById(id); }
-    create(dto) { return this.svc.create(dto); }
+    async create(dto) {
+        const { adminEmail, adminPassword, ...tenantData } = dto;
+        const tenant = await this.svc.create(tenantData);
+        let adminUser = null;
+        if (adminEmail && adminPassword) {
+            const user = await this.usersSvc.create({
+                email: adminEmail,
+                password: adminPassword,
+                permissions: [],
+                tenantId: tenant.id,
+            });
+            const { password, refreshTokenHash, ...safeUser } = user;
+            void password;
+            void refreshTokenHash;
+            adminUser = safeUser;
+        }
+        return { tenant, adminUser };
+    }
     update(id, dto) {
         return this.svc.update(id, dto);
     }
@@ -43,19 +75,36 @@ let TenantsController = class TenantsController {
 };
 exports.TenantsController = TenantsController;
 __decorate([
+    (0, common_1.Get)('public/by-slug/:slug'),
+    __param(0, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getPublicBySlug", null);
+__decorate([
+    (0, common_1.Get)('public/by-id/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getPublicById", null);
+__decorate([
     (0, common_1.Get)(),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('count'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "count", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -63,13 +112,15 @@ __decorate([
 ], TenantsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_tenant_dto_js_1.CreateTenantDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -78,6 +129,7 @@ __decorate([
 ], TenantsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -85,6 +137,7 @@ __decorate([
 ], TenantsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)(':id/modules'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -92,6 +145,7 @@ __decorate([
 ], TenantsController.prototype, "getModules", null);
 __decorate([
     (0, common_1.Patch)(':id/modules/:permission'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Param)('permission')),
     __param(2, (0, common_1.Body)()),
@@ -101,8 +155,8 @@ __decorate([
 ], TenantsController.prototype, "setModule", null);
 exports.TenantsController = TenantsController = __decorate([
     (0, common_1.Controller)('tenants'),
-    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
     __metadata("design:paramtypes", [tenants_service_js_1.TenantsService,
-        module_config_service_js_1.ModuleConfigService])
+        module_config_service_js_1.ModuleConfigService,
+        users_service_js_1.UsersService])
 ], TenantsController);
 //# sourceMappingURL=tenants.controller.js.map

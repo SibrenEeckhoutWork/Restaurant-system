@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthContext } from '@/context/AuthContext';
@@ -29,15 +29,14 @@ import {
   ChefHat,
   ChevronRight,
   ClipboardList,
-  Columns3,
   LayoutDashboard,
   LogOut,
-  TableProperties,
   Users2,
-  UtensilsCrossed,
   LayoutPanelTop,
   ShoppingBag,
 } from 'lucide-react';
+
+const API = process.env.NEXT_PUBLIC_API_URL!;
 
 const NAV_LINKS = [
   { href: '/backoffice', label: 'Dashboard', icon: LayoutDashboard },
@@ -68,6 +67,15 @@ const USER_MANAGEMENT_LINKS = [
 export function AppSidebar() {
   const { user, logout } = useAuthContext();
   const pathname = usePathname();
+  const [tenantName, setTenantName] = useState<string>('Backoffice');
+
+  useEffect(() => {
+    if (!user?.tenantId) return;
+    fetch(`${API}/tenants/public/by-id/${user.tenantId}`)
+      .then((r) => r.ok ? r.json() as Promise<{ name: string }> : null)
+      .then((t) => { if (t?.name) setTenantName(t.name); })
+      .catch(() => null);
+  }, [user?.tenantId]);
 
   const isOrderMgmtActive = pathname.startsWith('/backoffice/orders') || pathname.startsWith('/backoffice/kitchen');
   const [omOpen, setOmOpen] = useState(true);
@@ -94,7 +102,7 @@ export function AppSidebar() {
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <ChefHat className="size-4" />
               </div>
-              <span className="font-semibold">Backoffice</span>
+              <span className="font-semibold">{tenantName}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

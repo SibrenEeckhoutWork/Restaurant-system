@@ -15,6 +15,8 @@ class CreateTenantDto {
     name;
     slug;
     isActive;
+    adminEmail;
+    adminPassword;
 }
 exports.CreateTenantDto = CreateTenantDto;
 __decorate([
@@ -34,4 +36,15 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateTenantDto.prototype, "isActive", void 0);
+__decorate([
+    (0, class_validator_1.IsEmail)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTenantDto.prototype, "adminEmail", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTenantDto.prototype, "adminPassword", void 0);
 //# sourceMappingURL=create-tenant.dto.js.map

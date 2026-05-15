@@ -13,12 +13,13 @@ const tenant_entity_js_1 = require("./tenant.entity.js");
 const tenants_service_js_1 = require("./tenants.service.js");
 const tenants_controller_js_1 = require("./tenants.controller.js");
 const module_config_module_js_1 = require("../module-config/module-config.module.js");
+const users_module_js_1 = require("../users/users.module.js");
 let TenantsModule = class TenantsModule {
 };
 exports.TenantsModule = TenantsModule;
 exports.TenantsModule = TenantsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([tenant_entity_js_1.Tenant]), module_config_module_js_1.ModuleConfigModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([tenant_entity_js_1.Tenant]), module_config_module_js_1.ModuleConfigModule, users_module_js_1.UsersModule],
         controllers: [tenants_controller_js_1.TenantsController],
         providers: [tenants_service_js_1.TenantsService],
         exports: [tenants_service_js_1.TenantsService],

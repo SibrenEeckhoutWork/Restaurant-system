@@ -18,6 +18,8 @@ export default function TenantsPage() {
   const [createError, setCreateError] = useState('');
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
   const load = () => {
     setIsLoading(true);
@@ -35,9 +37,15 @@ export default function TenantsPage() {
     setCreateError('');
     setCreating(true);
     try {
-      await tenantsAdminService.create({ name, slug });
+      await tenantsAdminService.create({
+        name,
+        slug,
+        ...(adminEmail ? { adminEmail, adminPassword } : {}),
+      });
       setName('');
       setSlug('');
+      setAdminEmail('');
+      setAdminPassword('');
       setShowCreate(false);
       load();
     } catch (err) {
@@ -87,6 +95,30 @@ export default function TenantsPage() {
                   placeholder="restaurant-de-wever"
                 />
                 <p className="text-xs text-muted-foreground">Alleen kleine letters, cijfers en koppeltekens.</p>
+              </div>
+              <div className="border-t pt-4 space-y-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin account (optioneel)</p>
+                <div className="space-y-1">
+                  <Label htmlFor="adminEmail">E-mail</Label>
+                  <Input
+                    id="adminEmail"
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="admin@restaurant.com"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="adminPassword">Wachtwoord</Label>
+                  <Input
+                    id="adminPassword"
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Min. 6 tekens"
+                    minLength={6}
+                  />
+                </div>
               </div>
               {createError && <p className="text-sm text-destructive">{createError}</p>}
               <div className="flex gap-2">

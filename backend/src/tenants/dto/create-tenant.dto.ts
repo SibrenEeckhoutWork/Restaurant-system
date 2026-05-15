@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsBoolean, IsOptional, Matches, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsBoolean, IsOptional, Matches, MinLength, IsEmail } from 'class-validator';
 
 export class CreateTenantDto {
   @IsString()
@@ -14,4 +14,13 @@ export class CreateTenantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsEmail()
+  @IsOptional()
+  adminEmail?: string;
+
+  @IsString()
+  @MinLength(6)
+  @IsOptional()
+  adminPassword?: string;
 }

@@ -41,12 +41,12 @@ export const tenantsAdminService = {
     return adminFetch('/tenants/count').then((r) => handleResponse<number>(r));
   },
 
-  create(data: { name: string; slug: string }): Promise<Tenant> {
+  create(data: { name: string; slug: string; adminEmail?: string; adminPassword?: string }): Promise<{ tenant: Tenant; adminUser: unknown | null }> {
     return adminFetch('/tenants', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    }).then((r) => handleResponse<Tenant>(r));
+    }).then((r) => handleResponse<{ tenant: Tenant; adminUser: unknown | null }>(r));
   },
 
   update(id: string, data: Partial<{ name: string; slug: string; isActive: boolean }>): Promise<Tenant> {

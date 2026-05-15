@@ -68,17 +68,21 @@ let AuthService = class AuthService {
         this.config = config;
     }
     async login(dto, res) {
-        const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
-        if (!tenant || !tenant.isActive)
-            throw new common_1.UnauthorizedException('Tenant not found or inactive');
-        const user = await this.usersService.findByEmailInTenant(dto.email, tenant.id);
-        if (!user)
+        const user = await this.usersService.findByEmail(dto.email);
+        if (!user || user.isSuperAdmin)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const valid = await bcrypt.compare(dto.password, user.password);
         if (!valid)
             throw new common_1.UnauthorizedException('Invalid credentials');
         if (!user.isActive)
             throw new common_1.UnauthorizedException('Account disabled');
+        let tenant;
+        try {
+            tenant = await this.tenantsService.findById(user.tenantId);
+        }
+        catch { }
+        if (!tenant?.isActive)
+            throw new common_1.UnauthorizedException('Tenant inactive');
         return this.issueUserTokens(user, res);
     }
     async refresh(userId, incomingToken, res) {

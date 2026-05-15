@@ -35,16 +35,17 @@ export class AuthService {
   // ─── User Auth ───────────────────────────────────────────────────────────────
 
   async login(dto: LoginDto, res: Response) {
-    const tenant = await this.tenantsService.findBySlug(dto.tenantSlug);
-    if (!tenant || !tenant.isActive) throw new UnauthorizedException('Tenant not found or inactive');
-
-    const user = await this.usersService.findByEmailInTenant(dto.email, tenant.id);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    const user = await this.usersService.findByEmail(dto.email);
+    if (!user || user.isSuperAdmin) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
     if (!user.isActive) throw new UnauthorizedException('Account disabled');
+
+    let tenant;
+    try { tenant = await this.tenantsService.findById(user.tenantId!); } catch { /* not found */ }
+    if (!tenant?.isActive) throw new UnauthorizedException('Tenant inactive');
 
     return this.issueUserTokens(user, res);
   }

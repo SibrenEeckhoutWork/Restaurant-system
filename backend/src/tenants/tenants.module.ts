@@ -4,9 +4,10 @@ import { Tenant } from './tenant.entity.js';
 import { TenantsService } from './tenants.service.js';
 import { TenantsController } from './tenants.controller.js';
 import { ModuleConfigModule } from '../module-config/module-config.module.js';
+import { UsersModule } from '../users/users.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tenant]), ModuleConfigModule],
+  imports: [TypeOrmModule.forFeature([Tenant]), ModuleConfigModule, UsersModule],
   controllers: [TenantsController],
   providers: [TenantsService],
   exports: [TenantsService],
