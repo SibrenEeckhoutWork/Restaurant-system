@@ -1,9 +1,9 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/bestellen/page": "app/bestellen/page.js",
-  "/[slug]/kaart/page": "app/[slug]/kaart/page.js",
-  "/[slug]/galerij/page": "app/[slug]/galerij/page.js",
   "/[slug]/page": "app/[slug]/page.js",
+  "/[slug]/reserveren/page": "app/[slug]/reserveren/page.js",
+  "/[slug]/bestellen/page": "app/[slug]/bestellen/page.js",
+  "/[slug]/kaart/page": "app/[slug]/kaart/page.js",
   "/[slug]/contact/page": "app/[slug]/contact/page.js",
-  "/[slug]/reserveren/page": "app/[slug]/reserveren/page.js"
+  "/[slug]/galerij/page": "app/[slug]/galerij/page.js",
+  "/[slug]/[pagepath]/page": "app/[slug]/[pagepath]/page.js"
 }

@@ -447,25 +447,63 @@ export default function TenantDetailPage() {
           <div>
             <p className="text-sm font-medium mb-3">Navigatie</p>
             <div className="space-y-2">
-              {PAGE_KEYS.map(({ key: pageKey, label: pageLabel, defaultLabel }) => {
-                const navItem = getNavItem(pageKey);
-                return (
-                  <div key={pageKey} className="flex items-center gap-3 border rounded-lg px-3 py-2">
-                    <Switch
-                      checked={navItem.active}
-                      onCheckedChange={(checked) => setNavItem(pageKey, { active: checked })}
-                    />
-                    <span className="text-sm w-28 text-muted-foreground">{pageLabel}</span>
-                    <input
-                      type="text"
-                      placeholder={defaultLabel}
-                      value={navItem.label ?? ''}
-                      onChange={(e) => setNavItem(pageKey, { label: e.target.value || undefined })}
-                      className="flex-1 text-sm border rounded px-2 py-1"
-                    />
-                  </div>
-                );
-              })}
+              {[...PAGE_KEYS]
+                .sort((a, b) => (getNavItem(a.key).order ?? 99) - (getNavItem(b.key).order ?? 99))
+                .map(({ key: pageKey, label: pageLabel, defaultLabel }, idx, sorted) => {
+                  const navItem = getNavItem(pageKey);
+                  return (
+                    <div key={pageKey} className="flex items-center gap-2 border rounded-lg px-3 py-2">
+                      {/* Reorder */}
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            const prev = sorted[idx - 1];
+                            const curOrder = navItem.order ?? idx;
+                            const prevOrder = (getNavItem(prev.key).order ?? idx - 1);
+                            setNavItem(pageKey, { order: prevOrder });
+                            setNavItem(prev.key, { order: curOrder });
+                          }}
+                          className="p-0.5 disabled:opacity-30 text-muted-foreground hover:text-foreground"
+                        ><ChevronUp size={12} /></button>
+                        <button
+                          type="button"
+                          disabled={idx === sorted.length - 1}
+                          onClick={() => {
+                            const next = sorted[idx + 1];
+                            const curOrder = navItem.order ?? idx;
+                            const nextOrder = (getNavItem(next.key).order ?? idx + 1);
+                            setNavItem(pageKey, { order: nextOrder });
+                            setNavItem(next.key, { order: curOrder });
+                          }}
+                          className="p-0.5 disabled:opacity-30 text-muted-foreground hover:text-foreground"
+                        ><ChevronDown size={12} /></button>
+                      </div>
+                      <Switch
+                        checked={navItem.active}
+                        onCheckedChange={(checked) => setNavItem(pageKey, { active: checked })}
+                      />
+                      <span className="text-xs w-20 text-muted-foreground shrink-0">{pageLabel}</span>
+                      <input
+                        type="text"
+                        placeholder={defaultLabel}
+                        value={navItem.label ?? ''}
+                        onChange={(e) => setNavItem(pageKey, { label: e.target.value || undefined })}
+                        className="flex-1 text-sm border rounded px-2 py-1"
+                        title="Label in navigatie"
+                      />
+                      <input
+                        type="text"
+                        placeholder={pageKey}
+                        value={navItem.path ?? ''}
+                        onChange={(e) => setNavItem(pageKey, { path: e.target.value || undefined })}
+                        className="w-24 text-sm border rounded px-2 py-1 font-mono"
+                        title="URL pad (bv. fotos)"
+                      />
+                    </div>
+                  );
+                })}
             </div>
           </div>
 

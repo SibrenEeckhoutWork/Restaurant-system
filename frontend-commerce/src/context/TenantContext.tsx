@@ -21,6 +21,8 @@ export interface NavChildItem {
 export interface NavItemConfig {
   active: boolean;
   label?: string;
+  path?: string;
+  order?: number;
   children?: NavChildItem[];
 }
 

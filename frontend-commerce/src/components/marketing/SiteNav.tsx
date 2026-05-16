@@ -38,11 +38,15 @@ export default function SiteNav() {
   const links = tenant
     ? Object.entries(siteConfig?.nav?.items ?? {})
         .filter(([, item]) => item.active)
-        .map(([key, item]) => ({
-          href: key === 'home' ? `/${slug}` : `/${slug}/${key}`,
-          label: item.label ?? key,
-          children: (item.children ?? []).filter((c) => c.active),
-        }))
+        .sort(([, a], [, b]) => (a.order ?? 99) - (b.order ?? 99))
+        .map(([key, item]) => {
+          const segment = item.path ?? key;
+          return {
+            href: key === 'home' ? `/${slug}` : `/${slug}/${segment}`,
+            label: item.label ?? key,
+            children: (item.children ?? []).filter((c) => c.active),
+          };
+        })
     : fallbackLinks;
 
   const ctaHref = tenant ? `/${slug}/bestellen` : '/bestellen';

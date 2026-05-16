@@ -12,12 +12,12 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   fonts: { heading: 'instrument-serif', body: 'geist' },
   nav: {
     items: {
-      home:       { active: true, label: 'Thuis' },
-      kaart:      { active: true, label: 'Kaart' },
-      bestellen:  { active: true, label: 'Ontbijtbox' },
-      reserveren: { active: true, label: 'Reserveren' },
-      galerij:    { active: true, label: 'Galerij' },
-      contact:    { active: true, label: 'Contact' },
+      home:       { active: true, label: 'Thuis',      order: 0 },
+      kaart:      { active: true, label: 'Kaart',      order: 1 },
+      bestellen:  { active: true, label: 'Ontbijtbox', order: 2 },
+      reserveren: { active: true, label: 'Reserveren', order: 3 },
+      galerij:    { active: true, label: 'Galerij',    order: 4 },
+      contact:    { active: true, label: 'Contact',    order: 5 },
     },
   },
   pages: {
