@@ -18,6 +18,24 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const tenant_entity_js_1 = require("./tenant.entity.js");
 const default_site_config_js_1 = require("./default-site-config.js");
+function migrateSlot(s) {
+    if (typeof s === 'string')
+        return { parent: s, child: 'default' };
+    const entry = s;
+    if ('type' in entry)
+        return { parent: entry['type'], child: entry['variant'] ?? 'default' };
+    return s;
+}
+function migratePageConfig(raw) {
+    if (Array.isArray(raw)) {
+        return { active: true, slots: raw.map(migrateSlot) };
+    }
+    const page = raw;
+    return {
+        active: page['active'] !== false,
+        slots: (page['slots'] ?? []).map(migrateSlot),
+    };
+}
 function normalizeSiteConfig(raw) {
     const colors = { ...raw.colors };
     if (!colors.primary && raw.primaryColor) {
@@ -25,10 +43,15 @@ function normalizeSiteConfig(raw) {
     }
     const rawPages = (raw.pages ?? {});
     const pages = {};
-    for (const [key, slots] of Object.entries(rawPages)) {
-        pages[key] = slots.map((s) => typeof s === 'string' ? { type: s, variant: 'default' } : s);
+    for (const [key, val] of Object.entries(rawPages)) {
+        pages[key] = migratePageConfig(val);
     }
-    return { colors, fonts: raw.fonts, pages };
+    return {
+        colors,
+        fonts: raw.fonts,
+        nav: raw.nav,
+        pages,
+    };
 }
 let TenantsService = class TenantsService {
     repo;
@@ -81,6 +104,7 @@ let TenantsService = class TenantsService {
         tenant.siteConfig = {
             colors: dto.colors ?? existing.colors,
             fonts: dto.fonts ?? existing.fonts,
+            nav: dto.nav ?? existing.nav,
             pages: dto.pages ?? existing.pages,
         };
         await this.repo.save(tenant);

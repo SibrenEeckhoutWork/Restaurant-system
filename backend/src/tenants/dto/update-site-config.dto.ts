@@ -1,5 +1,5 @@
 import { IsOptional } from 'class-validator';
-import type { ColorConfig, FontConfig, SlotEntry } from '../tenant.entity.js';
+import type { ColorConfig, FontConfig, PageConfig, NavConfig } from '../tenant.entity.js';
 
 export class UpdateSiteConfigDto {
   @IsOptional()
@@ -9,5 +9,8 @@ export class UpdateSiteConfigDto {
   fonts?: FontConfig;
 
   @IsOptional()
-  pages?: Partial<Record<string, SlotEntry[]>>;
+  nav?: NavConfig;
+
+  @IsOptional()
+  pages?: Partial<Record<string, PageConfig>>;
 }

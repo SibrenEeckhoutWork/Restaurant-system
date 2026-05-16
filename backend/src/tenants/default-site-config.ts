@@ -10,22 +10,38 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     muted: '#6b5e52',
   },
   fonts: { heading: 'instrument-serif', body: 'geist' },
+  nav: {
+    items: {
+      home:       { active: true, label: 'Thuis' },
+      kaart:      { active: true, label: 'Kaart' },
+      bestellen:  { active: true, label: 'Ontbijtbox' },
+      reserveren: { active: true, label: 'Reserveren' },
+      galerij:    { active: true, label: 'Galerij' },
+      contact:    { active: true, label: 'Contact' },
+    },
+  },
   pages: {
-    home: [
-      { type: 'hero',            variant: 'default' },
-      { type: 'story',           variant: 'default' },
-      { type: 'serve-grid',      variant: 'default' },
-      { type: 'reservation-cta', variant: 'default' },
-    ],
-    reserveren: [{ type: 'reservation-wizard', variant: 'default' }],
-    bestellen: [
-      { type: 'box-order-hero',  variant: 'default' },
-      { type: 'box-order',       variant: 'default' },
-      { type: 'box-order-steps', variant: 'default' },
-      { type: 'box-order-faq',   variant: 'default' },
-    ],
-    kaart:   [{ type: 'menu',    variant: 'default' }],
-    contact: [{ type: 'contact', variant: 'default' }],
-    galerij: [{ type: 'gallery', variant: 'default' }],
+    home: {
+      active: true,
+      slots: [
+        { parent: 'hero',            child: 'default' },
+        { parent: 'story',           child: 'default' },
+        { parent: 'serve-grid',      child: 'default' },
+        { parent: 'reservation-cta', child: 'default' },
+      ],
+    },
+    reserveren: { active: true, slots: [{ parent: 'reservation-wizard', child: 'default' }] },
+    bestellen: {
+      active: true,
+      slots: [
+        { parent: 'box-order-hero',  child: 'default' },
+        { parent: 'box-order',       child: 'default' },
+        { parent: 'box-order-steps', child: 'default' },
+        { parent: 'box-order-faq',   child: 'default' },
+      ],
+    },
+    kaart:   { active: true, slots: [{ parent: 'menu',    child: 'default' }] },
+    contact: { active: true, slots: [{ parent: 'contact', child: 'default' }] },
+    galerij: { active: true, slots: [{ parent: 'gallery', child: 'default' }] },
   },
 };

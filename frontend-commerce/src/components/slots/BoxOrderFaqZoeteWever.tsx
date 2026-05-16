@@ -46,6 +46,22 @@ export default function BoxOrderFaqZoeteWever() {
               Vegetarisch, vegan, glutenvrij — meld het bij bestelling, we passen aan waar het kan.
             </p>
           </details>
+          <details className="card">
+            <summary style={{ cursor: 'pointer', fontFamily: 'var(--serif)', fontSize: '1.25rem', listStyle: 'none' }}>
+              Voor bedrijven?
+            </summary>
+            <p style={{ marginTop: '0.75rem', color: 'var(--espresso-2)' }}>
+              Zeker. Voor teams vanaf 8 personen, met factuur. Vraag onze bedrijfsfolder aan via mail.
+            </p>
+          </details>
+          <details className="card">
+            <summary style={{ cursor: 'pointer', fontFamily: 'var(--serif)', fontSize: '1.25rem', listStyle: 'none' }}>
+              Hoe betaal ik?
+            </summary>
+            <p style={{ marginTop: '0.75rem', color: 'var(--espresso-2)' }}>
+              Online via Bancontact, of bij afhaling cash of kaart. Een bevestigingsmail volgt steeds.
+            </p>
+          </details>
         </div>
       </div>
     </RevealSection>

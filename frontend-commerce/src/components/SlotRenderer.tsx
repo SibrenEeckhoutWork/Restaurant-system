@@ -28,6 +28,8 @@ import ContactSectionDefault      from '@/components/slots/ContactSectionDefault
 import ContactSectionZoeteWever   from '@/components/slots/ContactSectionZoeteWever';
 import GallerySectionDefault      from '@/components/slots/GallerySectionDefault';
 import GallerySectionZoeteWever   from '@/components/slots/GallerySectionZoeteWever';
+import VisitSectionDefault        from '@/components/slots/VisitSectionDefault';
+import VisitSectionZoeteWever     from '@/components/slots/VisitSectionZoeteWever';
 
 const SLOT_REGISTRY: Record<string, Record<string, React.ComponentType>> = {
   'hero':               { default: HeroSectionDefault, centered: HeroSectionCentered, 'zoete-wever': HeroSectionZoeteWever },
@@ -43,24 +45,37 @@ const SLOT_REGISTRY: Record<string, Record<string, React.ComponentType>> = {
   'box-order-faq':      { default: BoxOrderFaqDefault, 'zoete-wever': BoxOrderFaqZoeteWever },
   'contact':            { default: ContactSectionDefault, 'zoete-wever': ContactSectionZoeteWever },
   'gallery':            { default: GallerySectionDefault, 'zoete-wever': GallerySectionZoeteWever },
+  'visit':              { default: VisitSectionDefault, 'zoete-wever': VisitSectionZoeteWever },
 };
 
 function resolveSlot(raw: SlotEntry | string): SlotEntry {
-  return typeof raw === 'string' ? { type: raw, variant: 'default' } : raw;
+  if (typeof raw === 'string') return { parent: raw, child: 'default' };
+  // compat: old shape had type/variant
+  const entry = raw as unknown as Record<string, string>;
+  if ('type' in entry) return { parent: entry['type'], child: entry['variant'] ?? 'default' };
+  return raw;
 }
 
 type PageKey = keyof NonNullable<SiteConfig['pages']>;
 
 export default function SlotRenderer({ pageKey }: { pageKey: PageKey }) {
   const { siteConfig } = useTenant();
-  const rawSlots = siteConfig.pages?.[pageKey] ?? [];
+  const raw = siteConfig.pages?.[pageKey];
+  if (!raw) return null;
+
+  // compat: old DB data has page as SlotEntry[] instead of PageConfig
+  const page = Array.isArray(raw)
+    ? { active: true, slots: raw as unknown as SlotEntry[] }
+    : raw;
+
+  if (page.active === false) return null;
 
   return (
     <>
-      {rawSlots.map((raw, i) => {
-        const { type, variant } = resolveSlot(raw as SlotEntry | string);
-        const Component = SLOT_REGISTRY[type]?.[variant] ?? SLOT_REGISTRY[type]?.['default'];
-        return Component ? <Component key={`${type}-${variant}-${i}`} /> : null;
+      {(page.slots ?? []).map((s, i) => {
+        const { parent, child } = resolveSlot(s);
+        const Component = SLOT_REGISTRY[parent]?.[child] ?? SLOT_REGISTRY[parent]?.['default'];
+        return Component ? <Component key={`${parent}-${child}-${i}`} /> : null;
       })}
     </>
   );

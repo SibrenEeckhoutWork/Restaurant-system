@@ -10,8 +10,31 @@ export interface Tenant {
 }
 
 export interface SlotEntry {
-  type: string;
-  variant: string;
+  parent: string;
+  child: string;
+}
+
+export interface PageConfig {
+  active: boolean;
+  slots: SlotEntry[];
+}
+
+export interface NavChildItem {
+  active: boolean;
+  label: string;
+  href: string;
+}
+
+export interface NavItemConfig {
+  active: boolean;
+  label?: string;
+  children?: NavChildItem[];
+}
+
+export type PageKey = 'home' | 'reserveren' | 'bestellen' | 'kaart' | 'contact' | 'galerij';
+
+export interface NavConfig {
+  items?: Partial<Record<PageKey, NavItemConfig>>;
 }
 
 export interface ColorConfig {
@@ -31,7 +54,8 @@ export interface FontConfig {
 export interface SiteConfig {
   colors?: ColorConfig;
   fonts?: FontConfig;
-  pages?: Partial<Record<'home' | 'reserveren' | 'bestellen' | 'kaart' | 'contact', SlotEntry[]>>;
+  nav?: NavConfig;
+  pages?: Partial<Record<PageKey, PageConfig>>;
 }
 
 export interface ModuleConfig {

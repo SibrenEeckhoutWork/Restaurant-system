@@ -6,12 +6,12 @@ import { usePathname } from 'next/navigation';
 import { useTenantOptional } from '@/context/TenantContext';
 
 const fallbackLinks = [
-  { href: '/', label: 'Thuis' },
-  { href: '/kaart', label: 'Kaart' },
-  { href: '/bestellen', label: 'Ontbijtbox' },
-  { href: '/reserveren', label: 'Reserveren' },
-  { href: '/galerij', label: 'Galerij' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/', label: 'Thuis', children: [] },
+  { href: '/kaart', label: 'Kaart', children: [] },
+  { href: '/bestellen', label: 'Ontbijtbox', children: [] },
+  { href: '/reserveren', label: 'Reserveren', children: [] },
+  { href: '/galerij', label: 'Galerij', children: [] },
+  { href: '/contact', label: 'Contact', children: [] },
 ];
 
 export default function SiteNav() {
@@ -36,13 +36,13 @@ export default function SiteNav() {
   const brandName = tenant?.name ?? 'de Zoete Wever';
 
   const links = tenant
-    ? [
-        { href: `/${slug}`, label: 'Thuis' },
-        ...(siteConfig?.pages?.kaart?.length      ? [{ href: `/${slug}/kaart`,      label: 'Kaart' }]      : []),
-        ...(siteConfig?.pages?.bestellen?.length  ? [{ href: `/${slug}/bestellen`,  label: 'Ontbijtbox' }] : []),
-        ...(siteConfig?.pages?.reserveren?.length ? [{ href: `/${slug}/reserveren`, label: 'Reserveren' }] : []),
-        ...(siteConfig?.pages?.contact?.length    ? [{ href: `/${slug}/contact`,    label: 'Contact' }]    : []),
-      ]
+    ? Object.entries(siteConfig?.nav?.items ?? {})
+        .filter(([, item]) => item.active)
+        .map(([key, item]) => ({
+          href: key === 'home' ? `/${slug}` : `/${slug}/${key}`,
+          label: item.label ?? key,
+          children: (item.children ?? []).filter((c) => c.active),
+        }))
     : fallbackLinks;
 
   const ctaHref = tenant ? `/${slug}/bestellen` : '/bestellen';

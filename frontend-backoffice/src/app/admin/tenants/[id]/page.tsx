@@ -8,8 +8,10 @@ import {
   type ModuleConfig,
   type SiteConfig,
   type SlotEntry,
+  type PageConfig,
   type ColorConfig,
   type FontConfig,
+  type PageKey,
 } from '@/services/admin/tenants.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +37,7 @@ const SLOT_DEFINITIONS = [
   { type: 'box-order-faq',      label: 'FAQ',                  variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
   { type: 'contact',            label: 'Contact',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
   { type: 'gallery',            label: 'Galerij',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'visit',              label: 'Bezoek & locatie',     variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
 ] as const;
 
 const COLOR_FIELDS: { key: keyof ColorConfig; label: string }[] = [
@@ -58,14 +61,14 @@ const BODY_FONTS = [
   { key: 'raleway',  label: 'Raleway' },
 ];
 
-const PAGE_KEYS = [
-  { key: 'home',       label: 'Homepagina' },
-  { key: 'reserveren', label: 'Reserveren' },
-  { key: 'bestellen',  label: 'Bestellen' },
-  { key: 'kaart',      label: 'Menukaart' },
-  { key: 'contact',    label: 'Contact' },
-  { key: 'galerij',    label: 'Galerij' },
-] as const;
+const PAGE_KEYS: { key: PageKey; label: string; defaultLabel: string }[] = [
+  { key: 'home',       label: 'Homepagina',  defaultLabel: 'Thuis' },
+  { key: 'reserveren', label: 'Reserveren',  defaultLabel: 'Reserveren' },
+  { key: 'bestellen',  label: 'Bestellen',   defaultLabel: 'Ontbijtbox' },
+  { key: 'kaart',      label: 'Menukaart',   defaultLabel: 'Kaart' },
+  { key: 'contact',    label: 'Contact',     defaultLabel: 'Contact' },
+  { key: 'galerij',    label: 'Galerij',     defaultLabel: 'Galerij' },
+];
 
 const MODULE_GROUPS: { label: string; permissions: string[] }[] = [
   { label: 'Gebruikers',    permissions: ['users.read', 'users.create', 'users.update', 'users.delete'] },
@@ -80,11 +83,9 @@ const MODULE_GROUPS: { label: string; permissions: string[] }[] = [
   { label: 'Permissies',    permissions: ['permissions.manage'] },
 ];
 
-type PageKey = typeof PAGE_KEYS[number]['key'];
-
 interface AddState {
-  type: string;
-  variant: string;
+  parent: string;
+  child: string;
 }
 
 export default function TenantDetailPage() {
@@ -159,42 +160,47 @@ export default function TenantDetailPage() {
     }
   }
 
-  /* ── Color helpers ──────────────────────────────────────────────────── */
+  /* ── Color / font helpers ───────────────────────────────────────────── */
 
   function setColor(key: keyof ColorConfig, value: string) {
-    setSiteConfig((prev) => ({
-      ...prev,
-      colors: { ...prev.colors, [key]: value },
-    }));
+    setSiteConfig((prev) => ({ ...prev, colors: { ...prev.colors, [key]: value } }));
   }
 
   function setFont(key: keyof FontConfig, value: string) {
-    setSiteConfig((prev) => ({
-      ...prev,
-      fonts: { ...prev.fonts, [key]: value },
-    }));
+    setSiteConfig((prev) => ({ ...prev, fonts: { ...prev.fonts, [key]: value } }));
   }
 
-  /* ── Slot helpers ───────────────────────────────────────────────────── */
+  /* ── Page helpers ───────────────────────────────────────────────────── */
+
+  function getPage(pageKey: PageKey): PageConfig {
+    return siteConfig.pages?.[pageKey] ?? { active: true, slots: [] };
+  }
+
+  function setPage(pageKey: PageKey, page: PageConfig) {
+    setSiteConfig((prev) => ({ ...prev, pages: { ...prev.pages, [pageKey]: page } }));
+  }
+
+  function togglePageActive(pageKey: PageKey) {
+    const page = getPage(pageKey);
+    setPage(pageKey, { ...page, active: !page.active });
+  }
 
   function getPageSlots(pageKey: PageKey): SlotEntry[] {
-    const raw = siteConfig.pages?.[pageKey] ?? [];
-    return raw.map((s) => (typeof s === 'string' ? { type: s as string, variant: 'default' } : s));
+    return getPage(pageKey).slots;
   }
 
   function setPageSlots(pageKey: PageKey, slots: SlotEntry[]) {
-    setSiteConfig((prev) => ({ ...prev, pages: { ...prev.pages, [pageKey]: slots } }));
+    const page = getPage(pageKey);
+    setPage(pageKey, { ...page, slots });
   }
 
-  function updateSlotVariant(pageKey: PageKey, index: number, variant: string) {
+  function updateSlotChild(pageKey: PageKey, index: number, child: string) {
     const slots = getPageSlots(pageKey);
-    const next = slots.map((s, i) => (i === index ? { ...s, variant } : s));
-    setPageSlots(pageKey, next);
+    setPageSlots(pageKey, slots.map((s, i) => (i === index ? { ...s, child } : s)));
   }
 
   function removeSlot(pageKey: PageKey, index: number) {
-    const next = getPageSlots(pageKey).filter((_, i) => i !== index);
-    setPageSlots(pageKey, next);
+    setPageSlots(pageKey, getPageSlots(pageKey).filter((_, i) => i !== index));
   }
 
   function moveSlot(pageKey: PageKey, index: number, dir: -1 | 1) {
@@ -208,22 +214,38 @@ export default function TenantDetailPage() {
 
   function addSlot(pageKey: PageKey) {
     const state = addState[pageKey];
-    if (!state?.type || !state?.variant) return;
-    const next = [...getPageSlots(pageKey), { type: state.type, variant: state.variant }];
-    setPageSlots(pageKey, next);
+    if (!state?.parent || !state?.child) return;
+    setPageSlots(pageKey, [...getPageSlots(pageKey), { parent: state.parent, child: state.child }]);
     setAddState((prev) => ({ ...prev, [pageKey]: undefined }));
   }
 
-  function setAddType(pageKey: PageKey, type: string) {
-    const def = SLOT_DEFINITIONS.find((d) => d.type === type);
-    const firstVariant = def?.variants[0]?.key ?? 'default';
-    setAddState((prev) => ({ ...prev, [pageKey]: { type, variant: firstVariant } }));
+  function setAddParent(pageKey: PageKey, parent: string) {
+    const def = SLOT_DEFINITIONS.find((d) => d.type === parent);
+    const firstChild = def?.variants[0]?.key ?? 'default';
+    setAddState((prev) => ({ ...prev, [pageKey]: { parent, child: firstChild } }));
   }
 
-  function setAddVariant(pageKey: PageKey, variant: string) {
+  function setAddChild(pageKey: PageKey, child: string) {
     setAddState((prev) => ({
       ...prev,
-      [pageKey]: { ...(prev[pageKey] ?? { type: '', variant: '' }), variant },
+      [pageKey]: { ...(prev[pageKey] ?? { parent: '', child: '' }), child },
+    }));
+  }
+
+  /* ── Nav helpers ────────────────────────────────────────────────────── */
+
+  function getNavItem(pageKey: PageKey) {
+    return siteConfig.nav?.items?.[pageKey] ?? { active: true };
+  }
+
+  function setNavItem(pageKey: PageKey, patch: Partial<{ active: boolean; label: string }>) {
+    const current = getNavItem(pageKey);
+    setSiteConfig((prev) => ({
+      ...prev,
+      nav: {
+        ...prev.nav,
+        items: { ...prev.nav?.items, [pageKey]: { ...current, ...patch } },
+      },
     }));
   }
 
@@ -421,20 +443,53 @@ export default function TenantDetailPage() {
             </div>
           </div>
 
-          {/* Slot editor per page */}
+          {/* Navigatie */}
+          <div>
+            <p className="text-sm font-medium mb-3">Navigatie</p>
+            <div className="space-y-2">
+              {PAGE_KEYS.map(({ key: pageKey, label: pageLabel, defaultLabel }) => {
+                const navItem = getNavItem(pageKey);
+                return (
+                  <div key={pageKey} className="flex items-center gap-3 border rounded-lg px-3 py-2">
+                    <Switch
+                      checked={navItem.active}
+                      onCheckedChange={(checked) => setNavItem(pageKey, { active: checked })}
+                    />
+                    <span className="text-sm w-28 text-muted-foreground">{pageLabel}</span>
+                    <input
+                      type="text"
+                      placeholder={defaultLabel}
+                      value={navItem.label ?? ''}
+                      onChange={(e) => setNavItem(pageKey, { label: e.target.value || undefined })}
+                      className="flex-1 text-sm border rounded px-2 py-1"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Pagina secties */}
           <div>
             <p className="text-sm font-medium mb-3">Pagina secties</p>
             <div className="space-y-4">
               {PAGE_KEYS.map(({ key: pageKey, label: pageLabel }) => {
-                const activeSlots = getPageSlots(pageKey);
+                const page = getPage(pageKey);
+                const activeSlots = page.slots;
                 const pageAddState = addState[pageKey];
-                const selectedTypeDef = SLOT_DEFINITIONS.find((d) => d.type === pageAddState?.type);
+                const selectedTypeDef = SLOT_DEFINITIONS.find((d) => d.type === pageAddState?.parent);
 
                 return (
-                  <div key={pageKey} className="border rounded-lg p-3 space-y-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {pageLabel}
-                    </p>
+                  <div key={pageKey} className={`border rounded-lg p-3 space-y-3 ${!page.active ? 'opacity-60' : ''}`}>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={page.active}
+                        onCheckedChange={() => togglePageActive(pageKey)}
+                      />
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {pageLabel}
+                      </p>
+                    </div>
 
                     {/* Active slots */}
                     {activeSlots.length === 0 && (
@@ -442,17 +497,17 @@ export default function TenantDetailPage() {
                     )}
                     <div className="space-y-2">
                       {activeSlots.map((slot, idx) => {
-                        const typeDef = SLOT_DEFINITIONS.find((d) => d.type === slot.type);
+                        const typeDef = SLOT_DEFINITIONS.find((d) => d.type === slot.parent);
                         return (
                           <div key={idx} className="flex items-center gap-2 bg-muted/50 rounded px-2 py-1.5">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-muted-foreground leading-tight">{typeDef?.label ?? slot.type}</p>
+                              <p className="text-xs text-muted-foreground leading-tight">{typeDef?.label ?? slot.parent}</p>
                               <select
                                 className="text-sm font-medium bg-transparent border-0 p-0 focus:outline-none w-full"
-                                value={slot.variant}
-                                onChange={(e) => updateSlotVariant(pageKey, idx, e.target.value)}
+                                value={slot.child}
+                                onChange={(e) => updateSlotChild(pageKey, idx, e.target.value)}
                               >
-                                {(typeDef?.variants ?? [{ key: slot.variant, label: slot.variant }]).map((v) => (
+                                {(typeDef?.variants ?? [{ key: slot.child, label: slot.child }]).map((v) => (
                                   <option key={v.key} value={v.key}>{v.label}</option>
                                 ))}
                               </select>
@@ -493,8 +548,8 @@ export default function TenantDetailPage() {
                         <Label className="text-xs">Sectie</Label>
                         <select
                           className="w-full text-sm border rounded px-2 py-1 bg-background"
-                          value={pageAddState?.type ?? ''}
-                          onChange={(e) => setAddType(pageKey, e.target.value)}
+                          value={pageAddState?.parent ?? ''}
+                          onChange={(e) => setAddParent(pageKey, e.target.value)}
                         >
                           <option value="">— kies type —</option>
                           {SLOT_DEFINITIONS.map((def) => (
@@ -508,8 +563,8 @@ export default function TenantDetailPage() {
                           <Label className="text-xs">Weergave</Label>
                           <select
                             className="w-full text-sm border rounded px-2 py-1 bg-background"
-                            value={pageAddState?.variant ?? ''}
-                            onChange={(e) => setAddVariant(pageKey, e.target.value)}
+                            value={pageAddState?.child ?? ''}
+                            onChange={(e) => setAddChild(pageKey, e.target.value)}
                           >
                             {selectedTypeDef.variants.map((v) => (
                               <option key={v.key} value={v.key}>{v.label}</option>
@@ -522,7 +577,7 @@ export default function TenantDetailPage() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={!pageAddState?.type}
+                        disabled={!pageAddState?.parent}
                         onClick={() => addSlot(pageKey)}
                         className="shrink-0"
                       >

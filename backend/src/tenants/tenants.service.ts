@@ -1,11 +1,29 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Tenant, SiteConfig, SlotEntry, ColorConfig, FontConfig } from './tenant.entity.js';
+import { Tenant, SiteConfig, SlotEntry, PageConfig, ColorConfig, FontConfig } from './tenant.entity.js';
 import { CreateTenantDto } from './dto/create-tenant.dto.js';
 import { UpdateTenantDto } from './dto/update-tenant.dto.js';
 import { UpdateSiteConfigDto } from './dto/update-site-config.dto.js';
 import { DEFAULT_SITE_CONFIG } from './default-site-config.js';
+
+function migrateSlot(s: unknown): SlotEntry {
+  if (typeof s === 'string') return { parent: s, child: 'default' };
+  const entry = s as Record<string, string>;
+  if ('type' in entry) return { parent: entry['type'], child: entry['variant'] ?? 'default' };
+  return s as SlotEntry;
+}
+
+function migratePageConfig(raw: unknown): PageConfig {
+  if (Array.isArray(raw)) {
+    return { active: true, slots: raw.map(migrateSlot) };
+  }
+  const page = raw as Record<string, unknown>;
+  return {
+    active: page['active'] !== false,
+    slots: ((page['slots'] as unknown[]) ?? []).map(migrateSlot),
+  };
+}
 
 function normalizeSiteConfig(raw: Record<string, unknown>): SiteConfig {
   // Migrate primaryColor → colors.primary
@@ -14,16 +32,19 @@ function normalizeSiteConfig(raw: Record<string, unknown>): SiteConfig {
     colors.primary = raw.primaryColor as string;
   }
 
-  // Migrate string[] pages → SlotEntry[]
-  const rawPages = (raw.pages ?? {}) as Record<string, unknown[]>;
+  // Migrate pages (old: SlotEntry[] / string[], new: PageConfig)
+  const rawPages = (raw.pages ?? {}) as Record<string, unknown>;
   const pages: SiteConfig['pages'] = {};
-  for (const [key, slots] of Object.entries(rawPages)) {
-    pages[key as keyof typeof pages] = slots.map((s) =>
-      typeof s === 'string' ? { type: s, variant: 'default' } : (s as SlotEntry),
-    );
+  for (const [key, val] of Object.entries(rawPages)) {
+    pages[key as keyof typeof pages] = migratePageConfig(val);
   }
 
-  return { colors, fonts: raw.fonts as FontConfig | undefined, pages };
+  return {
+    colors,
+    fonts: raw.fonts as FontConfig | undefined,
+    nav: raw.nav as SiteConfig['nav'],
+    pages,
+  };
 }
 
 @Injectable()
@@ -81,6 +102,7 @@ export class TenantsService {
     tenant.siteConfig = {
       colors: dto.colors ?? existing.colors,
       fonts:  dto.fonts  ?? existing.fonts,
+      nav:    dto.nav    ?? existing.nav,
       pages:  dto.pages  ?? existing.pages,
     };
     await this.repo.save(tenant);

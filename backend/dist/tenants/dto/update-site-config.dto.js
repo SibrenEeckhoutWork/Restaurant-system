@@ -14,6 +14,7 @@ const class_validator_1 = require("class-validator");
 class UpdateSiteConfigDto {
     colors;
     fonts;
+    nav;
     pages;
 }
 exports.UpdateSiteConfigDto = UpdateSiteConfigDto;
@@ -25,6 +26,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], UpdateSiteConfigDto.prototype, "fonts", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateSiteConfigDto.prototype, "nav", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
