@@ -22,14 +22,19 @@ import Link from 'next/link';
 /* ── Slot definitions (mirrors commerce SLOT_REGISTRY) ─────────────────── */
 
 const SLOT_DEFINITIONS = [
-  { type: 'hero',               label: 'Hero sectie',          variants: [{ key: 'default', label: 'Standaard (tekst links, foto rechts)' }, { key: 'centered', label: 'Gecentreerde tekst (zonder foto)' }] },
-  { type: 'menu-preview',       label: 'Menu preview',         variants: [{ key: 'default', label: 'Standaard (story + kaarten)' }] },
-  { type: 'menu',               label: 'Volledige menukaart',  variants: [{ key: 'default', label: 'Standaard' }] },
-  { type: 'reservation-wizard', label: 'Reservatie wizard',    variants: [{ key: 'default', label: 'Standaard' }] },
-  { type: 'reservation-cta',    label: 'Reservatie CTA',       variants: [{ key: 'default', label: 'Standaard (buffet banner)' }] },
-  { type: 'box-order',          label: 'Ontbijtbox bestelling',variants: [{ key: 'default', label: 'Standaard' }] },
-  { type: 'contact',            label: 'Contactpagina',        variants: [{ key: 'default', label: 'Standaard' }] },
-  { type: 'gallery',            label: 'Fotogalerij',          variants: [{ key: 'default', label: 'Standaard' }] },
+  { type: 'hero',               label: 'Hero',                 variants: [{ key: 'default', label: 'Standaard' }, { key: 'centered', label: 'Gecentreerd (zonder foto)' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'story',              label: 'Verhaal',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'serve-grid',         label: 'Menu highlight',       variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'heritage',           label: 'Erfgoed',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'reservation-cta',    label: 'Reservatie banner',    variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'menu',               label: 'Volledige menukaart',  variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'reservation-wizard', label: 'Reservatie wizard',    variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'box-order-hero',     label: 'Bestellen hero',       variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'box-order',          label: 'Box selectie',         variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'box-order-steps',    label: 'Hoe werkt het',        variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'box-order-faq',      label: 'FAQ',                  variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'contact',            label: 'Contact',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
+  { type: 'gallery',            label: 'Galerij',              variants: [{ key: 'default', label: 'Standaard' }, { key: 'zoete-wever', label: 'De Zoete Wever' }] },
 ] as const;
 
 const COLOR_FIELDS: { key: keyof ColorConfig; label: string }[] = [
@@ -59,6 +64,7 @@ const PAGE_KEYS = [
   { key: 'bestellen',  label: 'Bestellen' },
   { key: 'kaart',      label: 'Menukaart' },
   { key: 'contact',    label: 'Contact' },
+  { key: 'galerij',    label: 'Galerij' },
 ] as const;
 
 const MODULE_GROUPS: { label: string; permissions: string[] }[] = [
@@ -368,9 +374,16 @@ export default function TenantDetailPage() {
                       onChange={(e) => setColor(key, e.target.value)}
                       className="h-8 w-10 cursor-pointer rounded border"
                     />
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {siteConfig.colors?.[key] ?? '#000000'}
-                    </span>
+                    <input
+                      type="text"
+                      value={siteConfig.colors?.[key] ?? '#000000'}
+                      maxLength={7}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (/^#[0-9a-fA-F]{0,6}$/.test(v)) setColor(key, v);
+                      }}
+                      className="w-[7ch] text-xs font-mono border rounded px-1 py-0.5"
+                    />
                   </div>
                 </div>
               ))}

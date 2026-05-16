@@ -1,7 +1,7 @@
 {
-  "/contact/page": "app/contact/page.js",
+  "/page": "app/page.js",
   "/[slug]/page": "app/[slug]/page.js",
   "/[slug]/kaart/page": "app/[slug]/kaart/page.js",
-  "/[slug]/bestellen/page": "app/[slug]/bestellen/page.js",
-  "/[slug]/reserveren/page": "app/[slug]/reserveren/page.js"
+  "/[slug]/reserveren/page": "app/[slug]/reserveren/page.js",
+  "/[slug]/bestellen/page": "app/[slug]/bestellen/page.js"
 }

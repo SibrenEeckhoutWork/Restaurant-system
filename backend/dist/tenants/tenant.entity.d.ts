@@ -17,7 +17,7 @@ export interface FontConfig {
 export interface SiteConfig {
     colors?: ColorConfig;
     fonts?: FontConfig;
-    pages?: Partial<Record<'home' | 'reserveren' | 'bestellen' | 'kaart' | 'contact', SlotEntry[]>>;
+    pages?: Partial<Record<'home' | 'reserveren' | 'bestellen' | 'kaart' | 'contact' | 'galerij', SlotEntry[]>>;
 }
 export declare class Tenant {
     id: string;

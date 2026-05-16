@@ -14,13 +14,20 @@ exports.DEFAULT_SITE_CONFIG = {
     pages: {
         home: [
             { type: 'hero', variant: 'default' },
-            { type: 'menu-preview', variant: 'default' },
+            { type: 'story', variant: 'default' },
+            { type: 'serve-grid', variant: 'default' },
             { type: 'reservation-cta', variant: 'default' },
         ],
         reserveren: [{ type: 'reservation-wizard', variant: 'default' }],
-        bestellen: [{ type: 'box-order', variant: 'default' }],
+        bestellen: [
+            { type: 'box-order-hero', variant: 'default' },
+            { type: 'box-order', variant: 'default' },
+            { type: 'box-order-steps', variant: 'default' },
+            { type: 'box-order-faq', variant: 'default' },
+        ],
         kaart: [{ type: 'menu', variant: 'default' }],
         contact: [{ type: 'contact', variant: 'default' }],
+        galerij: [{ type: 'gallery', variant: 'default' }],
     },
 };
 //# sourceMappingURL=default-site-config.js.map

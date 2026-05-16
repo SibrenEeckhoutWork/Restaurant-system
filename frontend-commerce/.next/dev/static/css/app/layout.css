@@ -366,11 +366,6 @@
     --font-mono: var(--font-geist-mono), ui-monospace, monospace;
     --default-font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
     --default-mono-font-family: var(--font-geist-mono), ui-monospace, monospace;
-    --color-background: var(--background);
-    --color-primary: var(--primary);
-    --color-secondary: var(--secondary);
-    --color-muted: var(--muted);
-    --color-accent: var(--accent);
   }
 }
 @layer base {
@@ -554,6 +549,9 @@
   }
   .min-h-full {
     min-height: 100%;
+  }
+  .resize {
+    resize: both;
   }
   .flex-col {
     flex-direction: column;
