@@ -13,6 +13,7 @@ exports.ALL_PERMISSIONS = [
     'categories.get', 'categories.create', 'categories.update', 'categories.delete',
     'allergies.get', 'allergies.create', 'allergies.update', 'allergies.delete',
     'permissions.manage',
+    'contact.read', 'contact.update', 'contact.delete',
 ];
 exports.PERMISSION_META = {
     'users.read': { label: 'Lezen', description: 'Gebruikers bekijken en opzoeken' },

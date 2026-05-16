@@ -165,7 +165,7 @@ export function useReservationWizard() {
     loadingSlots, slotsError,
     slots, selectedSlot, setSelectedSlot, fetchSlots, slotBooked,
     name, setName, email, setEmail, phone, setPhone, notes, setNotes,
-    submitting, submitError, submitReservation,
+    submitting, submitError,  submitReservation,
     reset,
   };
 }

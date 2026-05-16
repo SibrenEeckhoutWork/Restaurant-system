@@ -1,14 +1,44 @@
 'use client';
 
+import { useState } from 'react';
 import { useTenant } from '@/context/TenantContext';
 
-export default function ContactSectionDefault() {
-  const { name } = useTenant();
+const API = process.env.NEXT_PUBLIC_API_URL!;
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+export default function ContactSectionDefault() {
+  const { name, slug } = useTenant();
+  const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const btn = e.currentTarget.querySelector('button[type="submit"]') as HTMLButtonElement;
-    if (btn) { btn.textContent = 'Verzonden ✻'; btn.disabled = true; }
+    setSubmitting(true);
+    setError('');
+    const fd = new FormData(e.currentTarget);
+    try {
+      const res = await fetch(`${API}/contact/public`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          naam: fd.get('naam'),
+          email: fd.get('mail'),
+          telefoon: fd.get('telefoon') || undefined,
+          onderwerp: fd.get('onderwerp'),
+          bericht: fd.get('bericht'),
+          tenantSlug: slug,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as { message?: string };
+        throw new Error(body.message ? String(body.message) : 'Versturen mislukt. Probeer opnieuw.');
+      }
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Er ging iets mis.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -42,7 +72,10 @@ export default function ContactSectionDefault() {
           </select>
         </label>
         <label>Bericht<textarea name="bericht" required placeholder="Hoe kunnen we je helpen?" /></label>
-        <button className="btn btn--jam" type="submit">Verstuur <span className="arrow">→</span></button>
+        {error && <p style={{ color: 'var(--color-error, red)', fontSize: '0.9rem' }}>{error}</p>}
+        <button className="btn btn--jam" type="submit" disabled={submitting || sent}>
+          {sent ? 'Verzonden ✻' : submitting ? 'Bezig…' : <>Verstuur <span className="arrow">→</span></>}
+        </button>
       </form>
     </section>
   );

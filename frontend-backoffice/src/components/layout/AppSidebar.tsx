@@ -31,6 +31,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Users2,
   LayoutPanelTop,
   ShoppingBag,
@@ -64,6 +65,10 @@ const USER_MANAGEMENT_LINKS = [
   { href: '/backoffice/customers', label: 'Klanten' },
 ];
 
+const CUSTOMER_SUPPORT_LINKS = [
+  { href: '/backoffice/messages', label: 'Berichten' },
+];
+
 export function AppSidebar() {
   const { user, logout } = useAuthContext();
   const pathname = usePathname();
@@ -88,6 +93,9 @@ export function AppSidebar() {
 
   const isUserMgmtActive = pathname.startsWith('/backoffice/users');
   const [umOpen, setUmOpen] = useState(true);
+
+  const isCSActive = pathname.startsWith('/backoffice/messages');
+  const [csOpen, setCsOpen] = useState(true);
 
   return (
     <Sidebar collapsible="icon">
@@ -246,6 +254,40 @@ export function AppSidebar() {
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {USER_MANAGEMENT_LINKS.map(({ href, label }) => (
+                      <SidebarMenuSubItem key={href}>
+                        <SidebarMenuSubButton
+                          render={<Link href={href} />}
+                          isActive={pathname === href}
+                        >
+                          <span>{label}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+
+            <Collapsible open={csOpen} onOpenChange={setCsOpen}>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<CollapsibleTrigger />}
+                  isActive={isCSActive && !csOpen}
+                  tooltip="Klantensupport"
+                >
+                  <MessageSquare />
+                  <span>Klantensupport</span>
+                  <ChevronRight
+                    className={cn(
+                      'ml-auto size-4 transition-transform duration-200',
+                      csOpen && 'rotate-90',
+                    )}
+                  />
+                </SidebarMenuButton>
+
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {CUSTOMER_SUPPORT_LINKS.map(({ href, label }) => (
                       <SidebarMenuSubItem key={href}>
                         <SidebarMenuSubButton
                           render={<Link href={href} />}

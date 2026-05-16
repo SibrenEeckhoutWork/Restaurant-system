@@ -25,6 +25,7 @@ const reservations_module_js_1 = require("./reservations/reservations.module.js"
 const products_module_js_1 = require("./products/products.module.js");
 const orders_module_js_1 = require("./orders/orders.module.js");
 const tenants_module_js_1 = require("./tenants/tenants.module.js");
+const contact_module_js_1 = require("./contact/contact.module.js");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             products_module_js_1.ProductsModule,
             orders_module_js_1.OrdersModule,
             tenants_module_js_1.TenantsModule,
+            contact_module_js_1.ContactModule,
         ],
         controllers: [app_controller_js_1.AppController],
         providers: [app_service_js_1.AppService, admin_seed_service_js_1.AdminSeedService],

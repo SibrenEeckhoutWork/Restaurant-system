@@ -43,9 +43,10 @@ export class AuthService {
 
     if (!user.isActive) throw new UnauthorizedException('Account disabled');
 
-    let tenant;
-    try { tenant = await this.tenantsService.findById(user.tenantId!); } catch { /* not found */ }
-    if (!tenant?.isActive) throw new UnauthorizedException('Tenant inactive');
+    if (!user.tenantId) throw new UnauthorizedException('Account not linked to a tenant');
+    const tenant = await this.tenantsService.findById(user.tenantId).catch(() => null);
+    if (!tenant) throw new UnauthorizedException('Tenant not found');
+    if (!tenant.isActive) throw new UnauthorizedException('Tenant inactive');
 
     return this.issueUserTokens(user, res);
   }

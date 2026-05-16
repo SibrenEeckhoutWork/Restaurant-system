@@ -76,12 +76,12 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Invalid credentials');
         if (!user.isActive)
             throw new common_1.UnauthorizedException('Account disabled');
-        let tenant;
-        try {
-            tenant = await this.tenantsService.findById(user.tenantId);
-        }
-        catch { }
-        if (!tenant?.isActive)
+        if (!user.tenantId)
+            throw new common_1.UnauthorizedException('Account not linked to a tenant');
+        const tenant = await this.tenantsService.findById(user.tenantId).catch(() => null);
+        if (!tenant)
+            throw new common_1.UnauthorizedException('Tenant not found');
+        if (!tenant.isActive)
             throw new common_1.UnauthorizedException('Tenant inactive');
         return this.issueUserTokens(user, res);
     }

@@ -10,6 +10,7 @@ export const ALL_PERMISSIONS = [
   'categories.get', 'categories.create', 'categories.update', 'categories.delete',
   'allergies.get', 'allergies.create', 'allergies.update', 'allergies.delete',
   'permissions.manage',
+  'contact.read', 'contact.update', 'contact.delete',
 ];
 
 export const PERMISSION_META: Record<string, { label: string; description: string }> = {

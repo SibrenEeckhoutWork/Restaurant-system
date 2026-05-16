@@ -16,6 +16,7 @@ import { ReservationsModule } from './reservations/reservations.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { OrdersModule } from './orders/orders.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
+import { ContactModule } from './contact/contact.module.js';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TenantsModule } from './tenants/tenants.module.js';
     ProductsModule,
     OrdersModule,
     TenantsModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [AppService, AdminSeedService],
