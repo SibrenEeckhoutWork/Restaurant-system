@@ -4,6 +4,8 @@ import {
 import { TenantsService } from './tenants.service.js';
 import { CreateTenantDto } from './dto/create-tenant.dto.js';
 import { UpdateTenantDto } from './dto/update-tenant.dto.js';
+import { UpdateSiteConfigDto } from './dto/update-site-config.dto.js';
+import { DEFAULT_SITE_CONFIG } from './default-site-config.js';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard.js';
 import { ModuleConfigService } from '../module-config/module-config.service.js';
 import { UsersService } from '../users/users.service.js';
@@ -21,6 +23,13 @@ export class TenantsController {
     const t = await this.svc.findBySlug(slug);
     if (!t) throw new NotFoundException('Tenant not found');
     return { id: t.id, name: t.name, slug: t.slug, isActive: t.isActive };
+  }
+
+  @Get('public/by-slug/:slug/site-config')
+  async getPublicSiteConfig(@Param('slug') slug: string) {
+    const t = await this.svc.findBySlug(slug);
+    if (!t || !t.isActive) throw new NotFoundException('Tenant not found');
+    return { name: t.name, slug: t.slug, siteConfig: t.siteConfig ?? DEFAULT_SITE_CONFIG };
   }
 
   @Get('public/by-id/:id')
@@ -73,6 +82,16 @@ export class TenantsController {
   @Delete(':id')
   @UseGuards(SuperAdminGuard)
   remove(@Param('id') id: string) { return this.svc.remove(id); }
+
+  @Get(':id/site-config')
+  @UseGuards(SuperAdminGuard)
+  getSiteConfig(@Param('id') id: string) { return this.svc.getSiteConfig(id); }
+
+  @Patch(':id/site-config')
+  @UseGuards(SuperAdminGuard)
+  updateSiteConfig(@Param('id') id: string, @Body() dto: UpdateSiteConfigDto) {
+    return this.svc.updateSiteConfig(id, dto);
+  }
 
   @Get(':id/modules')
   @UseGuards(SuperAdminGuard)

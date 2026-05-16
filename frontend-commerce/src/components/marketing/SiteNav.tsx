@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTenantOptional } from '@/context/TenantContext';
 
-const links = [
+const fallbackLinks = [
   { href: '/', label: 'Thuis' },
   { href: '/kaart', label: 'Kaart' },
   { href: '/bestellen', label: 'Ontbijtbox' },
   { href: '/reserveren', label: 'Reserveren' },
-  { href: '/zaaltje', label: 'Zaaltje' },
   { href: '/galerij', label: 'Galerij' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export default function SiteNav() {
+  const tenant = useTenantOptional();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -30,11 +31,28 @@ export default function SiteNav() {
     setOpen(false);
   }, [pathname]);
 
+  const slug = tenant?.slug;
+  const siteConfig = tenant?.siteConfig;
+  const brandName = tenant?.name ?? 'de Zoete Wever';
+
+  const links = tenant
+    ? [
+        { href: `/${slug}`, label: 'Thuis' },
+        ...(siteConfig?.pages?.kaart?.length      ? [{ href: `/${slug}/kaart`,      label: 'Kaart' }]      : []),
+        ...(siteConfig?.pages?.bestellen?.length  ? [{ href: `/${slug}/bestellen`,  label: 'Ontbijtbox' }] : []),
+        ...(siteConfig?.pages?.reserveren?.length ? [{ href: `/${slug}/reserveren`, label: 'Reserveren' }] : []),
+        ...(siteConfig?.pages?.contact?.length    ? [{ href: `/${slug}/contact`,    label: 'Contact' }]    : []),
+      ]
+    : fallbackLinks;
+
+  const ctaHref = tenant ? `/${slug}/bestellen` : '/bestellen';
+  const homeHref = tenant ? `/${slug}` : '/';
+
   return (
     <header className={`nav${scrolled ? ' is-scrolled' : ''}${open ? ' menu-open' : ''}`}>
       <div className="nav__inner">
-        <Link className="brand" href="/">
-          <span className="brand__mark">de Zoete Wever</span>
+        <Link className="brand" href={homeHref}>
+          <span className="brand__mark">{brandName}</span>
           <span className="brand__name">est. Roeselare</span>
         </Link>
 
@@ -50,7 +68,7 @@ export default function SiteNav() {
           ))}
         </nav>
 
-        <Link className="nav__cta" href="/bestellen">
+        <Link className="nav__cta" href={ctaHref}>
           Bestel ontbijtbox
           <span className="arrow" aria-hidden="true">→</span>
         </Link>
@@ -80,7 +98,7 @@ export default function SiteNav() {
               {label}
             </Link>
           ))}
-          <Link className="nav__mobile-cta" href="/bestellen">
+          <Link className="nav__mobile-cta" href={ctaHref}>
             Bestel ontbijtbox →
           </Link>
         </nav>

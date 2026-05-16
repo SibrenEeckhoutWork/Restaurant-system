@@ -17,6 +17,19 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const tenant_entity_js_1 = require("./tenant.entity.js");
+const default_site_config_js_1 = require("./default-site-config.js");
+function normalizeSiteConfig(raw) {
+    const colors = { ...raw.colors };
+    if (!colors.primary && raw.primaryColor) {
+        colors.primary = raw.primaryColor;
+    }
+    const rawPages = (raw.pages ?? {});
+    const pages = {};
+    for (const [key, slots] of Object.entries(rawPages)) {
+        pages[key] = slots.map((s) => typeof s === 'string' ? { type: s, variant: 'default' } : s);
+    }
+    return { colors, fonts: raw.fonts, pages };
+}
 let TenantsService = class TenantsService {
     repo;
     constructor(repo) {
@@ -56,6 +69,22 @@ let TenantsService = class TenantsService {
     async remove(id) {
         const tenant = await this.findById(id);
         await this.repo.remove(tenant);
+    }
+    async getSiteConfig(id) {
+        const tenant = await this.findById(id);
+        const raw = (tenant.siteConfig ?? default_site_config_js_1.DEFAULT_SITE_CONFIG);
+        return normalizeSiteConfig(raw);
+    }
+    async updateSiteConfig(id, dto) {
+        const tenant = await this.findById(id);
+        const existing = normalizeSiteConfig((tenant.siteConfig ?? {}));
+        tenant.siteConfig = {
+            colors: dto.colors ?? existing.colors,
+            fonts: dto.fonts ?? existing.fonts,
+            pages: dto.pages ?? existing.pages,
+        };
+        await this.repo.save(tenant);
+        return tenant.siteConfig;
     }
 };
 exports.TenantsService = TenantsService;

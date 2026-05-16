@@ -13,6 +13,7 @@ interface BoxProduct {
 
 interface Props {
   boxes: BoxProduct[];
+  tenantSlug?: string;
 }
 
 type Step = 'boxes' | 'details' | 'success';
@@ -21,7 +22,7 @@ function formatPrice(price: number) {
   return `€ ${Number(price).toFixed(2).replace('.', ',')}`;
 }
 
-export default function BoxOrderSection({ boxes }: Props) {
+export default function BoxOrderSection({ boxes, tenantSlug }: Props) {
   const [open, setOpen] = useState(false);
   const [initialId, setInitialId] = useState<string | null>(null);
 
@@ -65,6 +66,7 @@ export default function BoxOrderSection({ boxes }: Props) {
         <OrderModal
           boxes={boxes}
           initialBoxId={initialId}
+          tenantSlug={tenantSlug}
           onClose={() => setOpen(false)}
         />
       )}
@@ -77,10 +79,11 @@ export default function BoxOrderSection({ boxes }: Props) {
 interface ModalProps {
   boxes: BoxProduct[];
   initialBoxId: string | null;
+  tenantSlug?: string;
   onClose: () => void;
 }
 
-function OrderModal({ boxes, initialBoxId, onClose }: ModalProps) {
+function OrderModal({ boxes, initialBoxId, tenantSlug, onClose }: ModalProps) {
   const initQty = Object.fromEntries(
     boxes.map((b) => [b.id, b.id === initialBoxId ? 1 : 0]),
   );
@@ -119,6 +122,7 @@ function OrderModal({ boxes, initialBoxId, onClose }: ModalProps) {
         ...form,
         address: form.deliveryType === 'delivery' ? form.address : undefined,
         items,
+        tenantSlug,
       };
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
         method: 'POST',

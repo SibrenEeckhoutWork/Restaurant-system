@@ -9,6 +9,31 @@ export interface Tenant {
   updatedAt: string;
 }
 
+export interface SlotEntry {
+  type: string;
+  variant: string;
+}
+
+export interface ColorConfig {
+  primary?: string;
+  secondary?: string;
+  accent?: string;
+  background?: string;
+  text?: string;
+  muted?: string;
+}
+
+export interface FontConfig {
+  heading?: string;
+  body?: string;
+}
+
+export interface SiteConfig {
+  colors?: ColorConfig;
+  fonts?: FontConfig;
+  pages?: Partial<Record<'home' | 'reserveren' | 'bestellen' | 'kaart' | 'contact', SlotEntry[]>>;
+}
+
 export interface ModuleConfig {
   id: string;
   permission: string;
@@ -59,6 +84,18 @@ export const tenantsAdminService = {
 
   remove(id: string): Promise<void> {
     return adminFetch(`/tenants/${id}`, { method: 'DELETE' }).then((r) => handleResponse<void>(r));
+  },
+
+  getSiteConfig(id: string): Promise<SiteConfig> {
+    return adminFetch(`/tenants/${id}/site-config`).then((r) => handleResponse<SiteConfig>(r));
+  },
+
+  updateSiteConfig(id: string, data: SiteConfig): Promise<SiteConfig> {
+    return adminFetch(`/tenants/${id}/site-config`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).then((r) => handleResponse<SiteConfig>(r));
   },
 
   getModules(id: string): Promise<ModuleConfig[]> {

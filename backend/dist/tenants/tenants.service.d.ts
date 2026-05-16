@@ -1,7 +1,8 @@
 import { Repository } from 'typeorm';
-import { Tenant } from './tenant.entity.js';
+import { Tenant, SiteConfig } from './tenant.entity.js';
 import { CreateTenantDto } from './dto/create-tenant.dto.js';
 import { UpdateTenantDto } from './dto/update-tenant.dto.js';
+import { UpdateSiteConfigDto } from './dto/update-site-config.dto.js';
 export declare class TenantsService {
     private readonly repo;
     constructor(repo: Repository<Tenant>);
@@ -12,4 +13,6 @@ export declare class TenantsService {
     create(dto: CreateTenantDto): Promise<Tenant>;
     update(id: string, dto: UpdateTenantDto): Promise<Tenant>;
     remove(id: string): Promise<void>;
+    getSiteConfig(id: string): Promise<SiteConfig>;
+    updateSiteConfig(id: string, dto: UpdateSiteConfigDto): Promise<SiteConfig>;
 }

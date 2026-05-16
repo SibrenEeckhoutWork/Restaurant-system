@@ -36,6 +36,51 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 }
 
 
+// Validate ../../../src/app/[slug]/bestellen/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/[slug]/bestellen">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/bestellen/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/[slug]/contact/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/[slug]/contact">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/contact/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/[slug]/kaart/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/[slug]/kaart">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/kaart/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/[slug]/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/[slug]">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/[slug]/reserveren/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/[slug]/reserveren">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/reserveren/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/bestellen/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/bestellen">> = Specific
@@ -95,6 +140,15 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 
 
 
+
+// Validate ../../../src/app/[slug]/layout.tsx
+{
+  type __IsExpected<Specific extends LayoutConfig<"/[slug]">> = Specific
+  const handler = {} as typeof import("../../../src/app/[slug]/layout.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
 
 // Validate ../../../src/app/layout.tsx
 {

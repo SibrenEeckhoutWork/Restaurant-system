@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, Geist, Geist_Mono } from 'next/font/google';
+import { Instrument_Serif, Geist, Geist_Mono, Playfair_Display, Cormorant_Garamond, Nunito, Raleway } from 'next/font/google';
 import { ServicesProvider } from '@/context/ServicesContext';
 import './globals.css';
 
@@ -20,6 +20,27 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
 });
 
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  variable: '--font-cormorant',
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+});
+
+const raleway = Raleway({
+  subsets: ['latin'],
+  variable: '--font-raleway',
+});
+
 export const metadata: Metadata = {
   title: 'De Zoete Wever — Ontbijt & koffie in Roeselare',
   description:
@@ -30,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="nl"
-      className={`${instrumentSerif.variable} ${geist.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${instrumentSerif.variable} ${geist.variable} ${geistMono.variable} ${playfair.variable} ${cormorant.variable} ${nunito.variable} ${raleway.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ServicesProvider>{children}</ServicesProvider>

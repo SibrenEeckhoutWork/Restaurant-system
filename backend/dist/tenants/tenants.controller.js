@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const tenants_service_js_1 = require("./tenants.service.js");
 const create_tenant_dto_js_1 = require("./dto/create-tenant.dto.js");
 const update_tenant_dto_js_1 = require("./dto/update-tenant.dto.js");
+const update_site_config_dto_js_1 = require("./dto/update-site-config.dto.js");
+const default_site_config_js_1 = require("./default-site-config.js");
 const super_admin_guard_js_1 = require("../auth/guards/super-admin.guard.js");
 const module_config_service_js_1 = require("../module-config/module-config.service.js");
 const users_service_js_1 = require("../users/users.service.js");
@@ -34,6 +36,12 @@ let TenantsController = class TenantsController {
         if (!t)
             throw new common_1.NotFoundException('Tenant not found');
         return { id: t.id, name: t.name, slug: t.slug, isActive: t.isActive };
+    }
+    async getPublicSiteConfig(slug) {
+        const t = await this.svc.findBySlug(slug);
+        if (!t || !t.isActive)
+            throw new common_1.NotFoundException('Tenant not found');
+        return { name: t.name, slug: t.slug, siteConfig: t.siteConfig ?? default_site_config_js_1.DEFAULT_SITE_CONFIG };
     }
     async getPublicById(id) {
         const t = await this.svc.findById(id).catch(() => null);
@@ -66,6 +74,10 @@ let TenantsController = class TenantsController {
         return this.svc.update(id, dto);
     }
     remove(id) { return this.svc.remove(id); }
+    getSiteConfig(id) { return this.svc.getSiteConfig(id); }
+    updateSiteConfig(id, dto) {
+        return this.svc.updateSiteConfig(id, dto);
+    }
     getModules(id) {
         return this.moduleConfigSvc.getAll(id);
     }
@@ -81,6 +93,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TenantsController.prototype, "getPublicBySlug", null);
+__decorate([
+    (0, common_1.Get)('public/by-slug/:slug/site-config'),
+    __param(0, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TenantsController.prototype, "getPublicSiteConfig", null);
 __decorate([
     (0, common_1.Get)('public/by-id/:id'),
     __param(0, (0, common_1.Param)('id')),
@@ -135,6 +154,23 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TenantsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Get)(':id/site-config'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], TenantsController.prototype, "getSiteConfig", null);
+__decorate([
+    (0, common_1.Patch)(':id/site-config'),
+    (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_site_config_dto_js_1.UpdateSiteConfigDto]),
+    __metadata("design:returntype", void 0)
+], TenantsController.prototype, "updateSiteConfig", null);
 __decorate([
     (0, common_1.Get)(':id/modules'),
     (0, common_1.UseGuards)(super_admin_guard_js_1.SuperAdminGuard),

@@ -1,6 +1,7 @@
 import { TenantsService } from './tenants.service.js';
 import { CreateTenantDto } from './dto/create-tenant.dto.js';
 import { UpdateTenantDto } from './dto/update-tenant.dto.js';
+import { UpdateSiteConfigDto } from './dto/update-site-config.dto.js';
 import { ModuleConfigService } from '../module-config/module-config.service.js';
 import { UsersService } from '../users/users.service.js';
 export declare class TenantsController {
@@ -13,6 +14,11 @@ export declare class TenantsController {
         name: string;
         slug: string;
         isActive: boolean;
+    }>;
+    getPublicSiteConfig(slug: string): Promise<{
+        name: string;
+        slug: string;
+        siteConfig: import("./tenant.entity.js").SiteConfig;
     }>;
     getPublicById(id: string): Promise<{
         id: string;
@@ -40,6 +46,8 @@ export declare class TenantsController {
     }>;
     update(id: string, dto: UpdateTenantDto): Promise<import("./tenant.entity.js").Tenant>;
     remove(id: string): Promise<void>;
+    getSiteConfig(id: string): Promise<import("./tenant.entity.js").SiteConfig>;
+    updateSiteConfig(id: string, dto: UpdateSiteConfigDto): Promise<import("./tenant.entity.js").SiteConfig>;
     getModules(id: string): Promise<import("../module-config/module-config.entity.js").ModuleConfig[]>;
     setModule(id: string, permission: string, body: {
         required: boolean;

@@ -16,6 +16,7 @@ let Tenant = class Tenant {
     name;
     slug;
     isActive;
+    siteConfig;
     createdAt;
     updatedAt;
 };
@@ -36,6 +37,10 @@ __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], Tenant.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    __metadata("design:type", Object)
+], Tenant.prototype, "siteConfig", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
